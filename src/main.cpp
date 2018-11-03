@@ -1,16 +1,9 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#include <MPU6050_tockn.h>
-
-#include "MAX30105.h"
-#include "heartRate.h"
-
-#include <U8g2lib.h>
-
-MPU6050 mpu6050(Wire);
-MAX30105 particleSensor;  
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   
+#include "Display.h"
+#include "Motion.h"
+#include "Pulse.h"
 
 const int BATTERY_PIN = A0;
 const long interval = 1000;
@@ -18,68 +11,57 @@ const long interval = 1000;
 unsigned long previousMillis = 0;
 long timer = 0;
 
-const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
-byte rates[RATE_SIZE]; //Array of heart rates
-byte rateSpot = 0;
-long lastBeat = 0; //Time at which the last beat occurred
-
-float beatsPerMinute;
-int beatAvg;
+Display display;
+Motion motion;
+Pulse pulse;
 
 float readBattery();
 
 void setup() {
 
   Serial.begin(115200);
-
   Wire.begin(D2, D1);
 
-  u8g2.begin();
-
-  u8g2.clearBuffer();					// clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB08_tr);	// choose a suitable font
-  u8g2.drawStr(0,10,"Hello World!");	// write something to the internal memory
-  u8g2.sendBuffer();
-
-  mpu6050.begin();
-  mpu6050.calcGyroOffsets(true);
-
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
-    Serial.println("MAX30105 was not found. Please check wiring/power. ");
-    delay(5000);
-  }
-  Serial.println("Place your index finger on the sensor with steady pressure.");
-
-  particleSensor.setup(); //Configure sensor with default settings
-  particleSensor.setPulseAmplitudeRed(0x0A); //Turn Red LED to low to indicate sensor is running
-  particleSensor.setPulseAmplitudeGreen(0); //Turn off Green LED
-
+  display.initialize();
+  /*delay(2000);
+  motion.initialize();
+  display.singleMessage("Motion OK");
   delay(2000);
+  pulse.initialize();
+  display.singleMessage("Pulse OK");
+  delay(2000);*/
+
+  display.setupAngleAndPulse();
 
 }
 
+auto counter = 0;
 void loop() {
 
-  mpu6050.update();
+  //mpu6050.update();
+
+  display.update();
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     // readBattery();
     
+    //display.angle(String(100));
+    display.beat();
 
     previousMillis = currentMillis;
   }
 
-  Serial.print("angleX : ");
+  /*Serial.print("angleX : ");
   Serial.print(mpu6050.getAngleX());
   Serial.print("\tangleY : ");
   Serial.print(mpu6050.getAngleY());
   Serial.print("\tangleZ : ");
-  Serial.print(mpu6050.getAngleZ());
-  Serial.print(", Avg BPM=");
-  Serial.println(beatAvg);
+  Serial.print(mpu6050.getAngleZ());*/
+  //Serial.print(", Avg BPM=");
+  //Serial.println(beatAvg);
 
-  long irValue = particleSensor.getIR();
+/*  long irValue = particleSensor.getIR();
 
   if (checkForBeat(irValue) == true)
   {
@@ -100,7 +82,7 @@ void loop() {
         beatAvg += rates[x];
       beatAvg /= RATE_SIZE;
     }
-  }
+  }*/
 }
 
 float readBattery() {
