@@ -4,6 +4,7 @@
 #include "Display.h"
 #include "Motion.h"
 #include "Pulse.h"
+#include "Mqtt.h"
 
 const int BATTERY_PIN = A0;
 const long interval = 1000;
@@ -14,6 +15,7 @@ long timer = 0;
 Display display;
 Motion motion;
 Pulse pulse;
+Mqtt mqtt;
 
 float readBattery();
 
@@ -27,6 +29,8 @@ void setup() {
   display.initialize();
   pulse.initialize();
   motion.initialize();
+  mqtt.initialize();
+  mqtt.update();
 
   display.setupAngleAndMovement();
 
@@ -47,11 +51,15 @@ void loop() {
 
   display.bpm(pulse.getBpmStr());
   display.motion(String(motion.getMovement()));
-  Serial.println(motion.getMovement());
+  //Serial.println(motion.getMovement());
+
+  mqtt.update();
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     // readBattery();
+
+    mqtt.sendData(pulse.getBpm(), motion.getMovement());
 
     previousMillis = currentMillis;
   }
