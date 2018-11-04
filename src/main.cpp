@@ -22,14 +22,11 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(D2, D1);
 
-  display.initialize();
-  /*delay(2000);
-  motion.initialize();
-  display.singleMessage("Motion OK");
   delay(2000);
+
+  display.initialize();
   pulse.initialize();
-  display.singleMessage("Pulse OK");
-  delay(2000);*/
+  motion.initialize();
 
   display.setupAngleAndPulse();
 
@@ -38,16 +35,26 @@ void setup() {
 auto counter = 0;
 void loop() {
 
-  //mpu6050.update();
+  auto loopStart = millis();
 
   display.update();
+  
+  if (pulse.update()) {
+    display.beat();
+  }
+
+  motion.update();
+  //Serial.println(motion.getMovement());
+
+  display.bpm(pulse.getBpmStr());
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     // readBattery();
     
     //display.angle(String(100));
-    display.beat();
+    //display.beat();
+    //display.bpm(String(100));
 
     previousMillis = currentMillis;
   }
@@ -61,28 +68,10 @@ void loop() {
   //Serial.print(", Avg BPM=");
   //Serial.println(beatAvg);
 
-/*  long irValue = particleSensor.getIR();
+  auto loopStop = millis();
+  //Serial.print("Loop time: ");
+  //Serial.println(loopStop - loopStart);
 
-  if (checkForBeat(irValue) == true)
-  {
-    //We sensed a beat!
-    long delta = millis() - lastBeat;
-    lastBeat = millis();
-
-    beatsPerMinute = 60 / (delta / 1000.0);
-
-    if (beatsPerMinute < 255 && beatsPerMinute > 20)
-    {
-      rates[rateSpot++] = (byte)beatsPerMinute; //Store this reading in the array
-      rateSpot %= RATE_SIZE; //Wrap variable
-
-      //Take average of readings
-      beatAvg = 0;
-      for (byte x = 0 ; x < RATE_SIZE ; x++)
-        beatAvg += rates[x];
-      beatAvg /= RATE_SIZE;
-    }
-  }*/
 }
 
 float readBattery() {

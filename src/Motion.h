@@ -11,9 +11,13 @@ class Motion
 
         void initialize();
 
+        void update();
+
+        int getMovement() const;
+
     private:
 
-        //
+        void calculatePercentage();
 
 };
 

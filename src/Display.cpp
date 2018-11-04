@@ -6,12 +6,11 @@
 
 const int TOP_Y = 10;
 const int BOTTOM_Y = 29;
+const long heartBeatInterval = 200;
+
+unsigned long beatShownMillis = 0;
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
-
-const long heartBeatInterval = 200;
-unsigned long prevMillis = 0;
-bool heartBeatShown = false;
 
 void Display::initialize()
 {
@@ -25,7 +24,7 @@ void Display::initialize()
     // u8g2_font_ncenB14_tr
     u8g2.setFontMode(0);
     //u8g2.setDrawColor(0);
-    u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Display OK");
+    u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Initializing");
     u8g2.sendBuffer();
 
     Serial.println("done");
@@ -33,18 +32,15 @@ void Display::initialize()
 
 void Display::update()
 {
-/*    if (heartBeatShown) {
-        u8g2.setFont(u8g2_font_cursor_tf);
-        u8g2.drawGlyph(114, 8, 0136);
-        u8g2.sendBuffer();
-    }
-*/
     unsigned long currentMillis = millis();
-    if (currentMillis - prevMillis >= heartBeatInterval) {
+
+    if (currentMillis - beatShownMillis >= heartBeatInterval) {
         u8g2.setFont(u8g2_font_cursor_tf);
         u8g2.drawGlyph(114, 8, 0136);
         u8g2.sendBuffer();
-        prevMillis = currentMillis;
+        //Serial.print("Pulse shown: ");
+        //Serial.println(currentMillis - beatShownMillis);
+        beatShownMillis = currentMillis;
     }
 }
 
@@ -64,7 +60,15 @@ void Display::singleMessage(const char * message)
 
 void Display::angle(String angle)
 {
+    u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.drawStr(70, BOTTOM_Y, angle.c_str());
+    u8g2.sendBuffer();
+}
+
+void Display::bpm(String bpm)
+{
+    u8g2.setFont(u8g2_font_9x15_mf);
+    u8g2.drawStr(65, TOP_Y, bpm.c_str());
     u8g2.sendBuffer();
 }
 
@@ -76,4 +80,5 @@ void Display::beat()
     u8g2.setFont(u8g2_font_cursor_tf);
     u8g2.drawGlyph(114, 8, 0137);
     u8g2.sendBuffer();
+    beatShownMillis = millis();
 }

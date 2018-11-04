@@ -19,6 +19,8 @@ class Display
 
         void angle(String angle);
 
+        void bpm(String bpm);
+
         void beat();
 
     private:
