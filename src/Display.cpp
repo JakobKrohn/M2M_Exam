@@ -19,11 +19,8 @@ void Display::initialize()
     u8g2.begin();
 
     u8g2.clearBuffer();
-    //u8g2.setFont(u8g2_font_ncenB08_tr);
     u8g2.setFont(u8g2_font_9x15_mf);
-    // u8g2_font_ncenB14_tr
     u8g2.setFontMode(0);
-    //u8g2.setDrawColor(0);
     u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Initializing");
     u8g2.sendBuffer();
 
@@ -44,7 +41,7 @@ void Display::update()
     }
 }
 
-void Display::setupAngleAndPulse()
+void Display::setupAngleAndMovement()
 {
     u8g2.clearBuffer();
     u8g2.drawStr(0, TOP_Y, "Pulse: ");
@@ -58,10 +55,17 @@ void Display::singleMessage(const char * message)
     u8g2.sendBuffer();
 }
 
-void Display::angle(String angle)
+void Display::motion(String motion)
 {
+
+    int offset = 4;
+    int add = offset - motion.length();
+    for (int i = 0; i < add; i++) {
+        motion += " ";
+    }
+
     u8g2.setFont(u8g2_font_9x15_mf);
-    u8g2.drawStr(70, BOTTOM_Y, angle.c_str());
+    u8g2.drawStr(70, BOTTOM_Y, motion.c_str());
     u8g2.sendBuffer();
 }
 

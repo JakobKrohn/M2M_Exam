@@ -28,7 +28,7 @@ void setup() {
   pulse.initialize();
   motion.initialize();
 
-  display.setupAngleAndPulse();
+  display.setupAngleAndMovement();
 
 }
 
@@ -44,29 +44,17 @@ void loop() {
   }
 
   motion.update();
-  //Serial.println(motion.getMovement());
 
   display.bpm(pulse.getBpmStr());
+  display.motion(String(motion.getMovement()));
+  Serial.println(motion.getMovement());
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     // readBattery();
-    
-    //display.angle(String(100));
-    //display.beat();
-    //display.bpm(String(100));
 
     previousMillis = currentMillis;
   }
-
-  /*Serial.print("angleX : ");
-  Serial.print(mpu6050.getAngleX());
-  Serial.print("\tangleY : ");
-  Serial.print(mpu6050.getAngleY());
-  Serial.print("\tangleZ : ");
-  Serial.print(mpu6050.getAngleZ());*/
-  //Serial.print(", Avg BPM=");
-  //Serial.println(beatAvg);
 
   auto loopStop = millis();
   //Serial.print("Loop time: ");

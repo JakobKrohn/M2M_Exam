@@ -13,11 +13,11 @@ class Display
 
         void update();
 
-        void setupAngleAndPulse();
+        void setupAngleAndMovement();
 
         void singleMessage(const char * message);
 
-        void angle(String angle);
+        void motion(String motion);
 
         void bpm(String bpm);
 

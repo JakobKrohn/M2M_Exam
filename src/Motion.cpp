@@ -46,7 +46,11 @@ void Motion::update()
 
 int Motion::getMovement() const
 {
-   return 0;
+    int movement = percentX + percentY + percentZ;
+    if (movement > 1000) {
+        movement = 1000;
+    }
+    return movement;
 }
 
 // Private
@@ -77,10 +81,10 @@ void Motion::calculatePercentage()
         percentZ = (decrease / prevZ) * 100;
     }
 
-    Serial.print("X%: ");
+    /*Serial.print("X%: ");
     Serial.print(percentX);
     Serial.print("\tY%: ");
     Serial.print(percentY);
     Serial.print("\tZ%: ");
-    Serial.println(percentZ);
+    Serial.println(percentZ);*/
 }
