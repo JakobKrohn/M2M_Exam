@@ -12,6 +12,8 @@ unsigned long beatShownMillis = 0;
 
 String displayedBpm, displayedMotion = "";
 
+bool displayEnabled = false;
+
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 void Display::initialize()
@@ -19,6 +21,8 @@ void Display::initialize()
     Serial.print("\nInitializing Display ... ");
 
     u8g2.begin();
+
+    enable(1);
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_9x15_mf);
@@ -31,6 +35,8 @@ void Display::initialize()
 
 void Display::update()
 {
+    if (!isEnabled()) { return; }
+
     unsigned long currentMillis = millis();
 
     if (currentMillis - beatShownMillis >= heartBeatInterval) {
@@ -41,8 +47,20 @@ void Display::update()
     }
 }
 
+void Display::enable(bool enabled)
+{
+    if (displayEnabled == enabled) {
+        return;
+    }
+    displayEnabled = enabled;
+
+    (displayEnabled) ? (u8g2.setPowerSave(0)) : (u8g2.setPowerSave(1));
+}
+
 void Display::setupAngleAndMovement()
 {
+    if (!isEnabled()) { return; }
+
     u8g2.clearBuffer();
     u8g2.drawStr(0, TOP_Y, "Pulse: ");
     u8g2.drawStr(0, BOTTOM_Y, "Motion: ");
@@ -50,6 +68,8 @@ void Display::setupAngleAndMovement()
 
 void Display::singleMessage(const char * message)
 {
+    if (!isEnabled()) { return; }
+
     u8g2.clearBuffer();
     u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, message);
     u8g2.sendBuffer();
@@ -57,7 +77,7 @@ void Display::singleMessage(const char * message)
 
 void Display::motion(String motion)
 {
-    if (displayedMotion.equals(motion)) {
+    if (displayedMotion.equals(motion) || !isEnabled()) {
         return;
     }
 
@@ -72,7 +92,7 @@ void Display::motion(String motion)
 
 void Display::bpm(String bpm)
 {
-    if (displayedBpm.equals(bpm)) {
+    if (displayedBpm.equals(bpm) || !isEnabled()) {
         return;
     }
 
@@ -88,6 +108,8 @@ void Display::bpm(String bpm)
 
 void Display::beat()
 {
+    if (!isEnabled()) { return; }
+    
     // Font used: 
     // https://github.com/olikraus/u8g2/wiki/fntgrpx11
     u8g2.setFont(u8g2_font_cursor_tf);
@@ -106,4 +128,9 @@ void Display::addSpacing(String & str) const
     for (int i = 0; i < add; i++) {
         str += " ";
     }
+}
+
+bool Display::isEnabled() const
+{
+    return displayEnabled;
 }

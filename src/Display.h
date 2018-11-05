@@ -13,6 +13,8 @@ class Display
 
         void update();
 
+        void enable(bool enabled);
+
         void setupAngleAndMovement();
 
         void singleMessage(const char * message);
@@ -26,6 +28,8 @@ class Display
     private:
 
         void addSpacing(String & str) const;
+
+        bool isEnabled() const;
 
 };
 

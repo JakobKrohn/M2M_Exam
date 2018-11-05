@@ -17,7 +17,7 @@ Motion motion;
 Pulse pulse;
 Mqtt mqtt;
 
-float readBattery();
+float manageBattery();
 
 void setup() {
 
@@ -56,7 +56,8 @@ void loop() {
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
-    // readBattery();
+
+    manageBattery();
 
     mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement());
 
@@ -70,13 +71,17 @@ void loop() {
 
 }
 
-float readBattery() {
+float manageBattery() {
 
   unsigned int raw = analogRead(BATTERY_PIN);
   float batterVoltage = (raw / 1023.0) * 4.2;
 
   Serial.print("Battery voltage: ");
   Serial.println(batterVoltage);
+
+  if (batterVoltage < 3.3) {
+    display.enable(0);
+  }
 
   return batterVoltage;
 
