@@ -49,9 +49,8 @@ void loop() {
 
   motion.update();
 
-  display.bpm(pulse.getBpmStr());
-  display.motion(String(motion.getMovement()));
-  //Serial.println(motion.getMovement());
+  display.bpm(String(pulse.getCurrentBpm()));
+  display.motion(String(motion.getCurrentMovement()));
 
   mqtt.update();
   
@@ -59,12 +58,13 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     // readBattery();
 
-    mqtt.sendData(pulse.getBpm(), motion.getMovement());
+    mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement());
 
     previousMillis = currentMillis;
   }
 
   auto loopStop = millis();
+  auto loopTime = loopStop - loopStart;
   //Serial.print("Loop time: ");
   //Serial.println(loopStop - loopStart);
 

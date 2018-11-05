@@ -5,62 +5,48 @@
 
 // https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
 
-const byte RATE_SIZE = 8; //Increase this for more averaging. 4 is good.
-byte rates[RATE_SIZE]; //Array of heart rates
-byte rateSpot = 0;
-long lastBeat = 0; //Time at which the last beat occurred
+const int MEASURE_SIZE = 8;
 
-float beatsPerMinute;
-int beatAvg;
+// Stores readings, used to calculate average bpm
+std::vector<byte> measurements(MEASURE_SIZE);
+byte measureCounter = 0;
 
-MAX30105 particleSensor;
+float lastBeat = 0;       // Stores time since last beat
+long timeNoBeat = 0;      // Stores time without a beat, used to reset bpm to null
+
+float measuredBpm = 0;    // The actual measured bpm
+int currentBpm = 0;       // The calculated bpm, average of last 8 readings
+
+MAX30105 sensor;
 
 void Pulse::initialize()
 {
     Serial.print("\nPulse initializing ... ");
 
-    if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
+    if (!sensor.begin(Wire, I2C_SPEED_FAST)) {
         Serial.println("\nMAX30105 was not found. Please check wiring/power. ");
         while (1) { yield(); }
     }
-    Serial.println("Place your index finger on the sensor with steady pressure.");
 
-    particleSensor.setup(); 
-    particleSensor.setPulseAmplitudeRed(0x0A); 
-    particleSensor.setPulseAmplitudeGreen(0); 
+    sensor.setup(); 
 
     Serial.println("done");
 }
 
 bool Pulse::update()
 {
-    long irValue = particleSensor.getIR();
+    long irValue = sensor.getIR();
 
     if (irValue < 50000) {
-        beatAvg = 0;
+        currentBpm = 0;
         return false;
     }
 
-    if (checkForBeat(irValue) == true)
-    {
-        Serial.println("Beat!");
-        //We sensed a beat!
-        long delta = millis() - lastBeat;
+    if (checkForBeat(irValue)) {
+        long timeSinceLastBeat = millis() - lastBeat;
         lastBeat = millis();
 
-        beatsPerMinute = 60 / (delta / 1000.0);
-
-        if (beatsPerMinute < 255 && beatsPerMinute > 20)
-        {
-        rates[rateSpot++] = (byte)beatsPerMinute; //Store this reading in the array
-        rateSpot %= RATE_SIZE; //Wrap variable
-
-        //Take average of readings
-        beatAvg = 0;
-        for (byte x = 0 ; x < RATE_SIZE ; x++)
-            beatAvg += rates[x];
-        beatAvg /= RATE_SIZE;
-        }
+        calculateCurrentBpm(timeSinceLastBeat);
 
         return true;
     }
@@ -68,16 +54,37 @@ bool Pulse::update()
     return false;
 }
 
-String Pulse::getBpmStr() const
+/*String Pulse::getBpmStr() const
 {
     if (beatAvg == 0) {
         return "--";
     }
 
     return String(beatAvg);
+}*/
+
+int Pulse::getCurrentBpm() const
+{
+    return currentBpm;
 }
 
-int Pulse::getBpm() const
+// Private
+
+void Pulse::calculateCurrentBpm(int timeSinceLastBeat)
 {
-    return beatAvg;
+    measuredBpm = 60 / (timeSinceLastBeat / 1000.0);
+
+    // Store reading in vector
+    measurements[measureCounter++] = (byte)measuredBpm;
+
+    // If measureCounter is measure_size set it back to 0
+    measureCounter %= MEASURE_SIZE;
+
+    // Take average of readings
+    currentBpm = 0;
+    for (byte x = 0; x < MEASURE_SIZE; x++) {
+        currentBpm += measurements[x];
+    }
+
+    currentBpm /= MEASURE_SIZE;
 }

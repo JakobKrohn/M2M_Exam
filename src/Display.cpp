@@ -10,6 +10,8 @@ const long heartBeatInterval = 200;
 
 unsigned long beatShownMillis = 0;
 
+String displayedBpm, displayedMotion = "";
+
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 void Display::initialize()
@@ -35,8 +37,6 @@ void Display::update()
         u8g2.setFont(u8g2_font_cursor_tf);
         u8g2.drawGlyph(114, 8, 0136);
         u8g2.sendBuffer();
-        //Serial.print("Pulse shown: ");
-        //Serial.println(currentMillis - beatShownMillis);
         beatShownMillis = currentMillis;
     }
 }
@@ -57,12 +57,13 @@ void Display::singleMessage(const char * message)
 
 void Display::motion(String motion)
 {
-
-    int offset = 4;
-    int add = offset - motion.length();
-    for (int i = 0; i < add; i++) {
-        motion += " ";
+    if (displayedMotion.equals(motion)) {
+        return;
     }
+
+    displayedMotion = motion;
+    
+    addSpacing(motion);
 
     u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.drawStr(70, BOTTOM_Y, motion.c_str());
@@ -71,6 +72,15 @@ void Display::motion(String motion)
 
 void Display::bpm(String bpm)
 {
+    if (displayedBpm.equals(bpm)) {
+        return;
+    }
+
+    displayedBpm = bpm;
+    
+    //bpm = addSpacing(bpm);
+    addSpacing(bpm);
+    
     u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.drawStr(65, TOP_Y, bpm.c_str());
     u8g2.sendBuffer();
@@ -78,11 +88,22 @@ void Display::bpm(String bpm)
 
 void Display::beat()
 {
+    // Font used: 
     // https://github.com/olikraus/u8g2/wiki/fntgrpx11
-    // empty heart -> 0136
-    // bank heart -> 0137
     u8g2.setFont(u8g2_font_cursor_tf);
     u8g2.drawGlyph(114, 8, 0137);
     u8g2.sendBuffer();
     beatShownMillis = millis();
+}
+
+// Private
+
+void Display::addSpacing(String & str) const
+{
+    int offset = 4;
+    int add = offset - str.length();
+
+    for (int i = 0; i < add; i++) {
+        str += " ";
+    }
 }

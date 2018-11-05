@@ -25,7 +25,7 @@ class Display
 
     private:
 
-        //
+        void addSpacing(String & str) const;
 
 };
 

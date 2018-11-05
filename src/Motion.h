@@ -13,7 +13,9 @@ class Motion
 
         void update();
 
-        int getMovement() const;
+        int getAverageMovement() const;
+
+        int getCurrentMovement() const;
 
     private:
 

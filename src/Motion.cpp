@@ -16,6 +16,10 @@ int percentX = 0;
 int percentY = 0;
 int percentZ = 0;
 
+int currentMovement = 0;
+
+std::vector<int> movements;
+
 // Library object
 MPU6050 mpu6050(Wire);
 
@@ -44,13 +48,23 @@ void Motion::update()
     prevZ = currZ;
 }
 
-int Motion::getMovement() const
+int Motion::getAverageMovement() const
 {
-    int movement = percentX + percentY + percentZ;
-    if (movement > 1000) {
-        movement = 1000;
+    int average = 0;
+    for (auto const& reading: movements) {
+        average += reading;
     }
-    return movement;
+
+    average = average / movements.size();
+    
+    movements.clear();
+
+    return average;
+}
+
+int Motion::getCurrentMovement() const
+{
+    return currentMovement;
 }
 
 // Private
@@ -80,6 +94,15 @@ void Motion::calculatePercentage()
         auto decrease = int(prevZ) - int(currZ);
         percentZ = (decrease / prevZ) * 100;
     }
+
+    // Calculate current movement
+    currentMovement = percentX + percentY + percentZ;
+    if (currentMovement > 1000) {
+        currentMovement = 1000;
+    }
+
+    // Add this reading to vector
+    movements.push_back(currentMovement);
 
     /*Serial.print("X%: ");
     Serial.print(percentX);

@@ -38,7 +38,7 @@ void Mqtt::update()
         connectClient();
     }
 
-    if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
+    if ( millis() - lastSend > 1000 ) { 
         lastSend = millis();
     }
 
@@ -47,8 +47,6 @@ void Mqtt::update()
 
 void Mqtt::sendData(int bpm, int motion)
 {
-    Serial.println("Preparing payload");
-
     String payload = "{";
     payload += "\"bpm\":";
     payload += String(bpm);
@@ -57,16 +55,9 @@ void Mqtt::sendData(int bpm, int motion)
     payload += String(motion);
     payload += "}";
 
-    //Serial.println("Payload: ");
-    //Serial.println(payload);
-
     const char * attributes = payload.c_str();
 
     client.publish("v1/devices/me/telemetry", attributes);
-
-    Serial.println("Attributes: ");
-    Serial.println(attributes);
-    
 }
 
 // Private
@@ -109,7 +100,7 @@ bool Mqtt::connectClient()
     // Generate unique name
     auto clientID = generateClientID();
 
-    int timeout = 50;
+    int timeout = 5;
     int attempts = 0; 
 
     while (!client.connected()) {
