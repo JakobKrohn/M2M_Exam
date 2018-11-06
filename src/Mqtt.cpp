@@ -28,12 +28,84 @@ unsigned long lastSend = 0;
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
+boolean gpioState[] = {false, false};
+
+void callback(const char * topic, byte * payload, unsigned int length)
+{
+    // https://thingsboard.io/docs/samples/esp8266/gpio/
+    Serial.println("Message received");
+
+    char json[length+1];
+    strncpy(json, (char*) payload, length);
+    json[length] = '\0';
+
+    Serial.print("Topic: ");
+    Serial.print(topic);
+    Serial.print(" Message: ");
+    Serial.println(json);
+
+    // Decode JSON request
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& data = jsonBuffer.parseObject((char*) json);
+
+    if (!data.success()) {
+        Serial.println("Failed parsing json");
+        return;
+    }
+
+    // Check request method
+    String methodName = String((const char*)data["method"]);
+
+    if (methodName.equals("getGpioStatus")) {
+        // Reply with GPIO status
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        client.publish(responseTopic.c_str(), "true");
+    } else if (methodName.equals("setGpioStatus")) {
+        // Update GPIO status and reply
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        client.publish(responseTopic.c_str(), "false");
+    }
+}
+
+String get_gpio_status() {
+  // Prepare gpios JSON payload string
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  data[String(0)] = gpioState[0] ? true : false;
+  data[String(2)] = gpioState[1] ? true : false;
+  char payload[256];
+  data.printTo(payload, sizeof(payload));
+  String strPayload = String(payload);
+  Serial.print("Get gpio status: ");
+  Serial.println(strPayload);
+  return strPayload;
+}
+
+void set_gpio_status(int pin, boolean enabled) {
+  if (pin == 0) {
+    // Output GPIOs state
+    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[0] = enabled;
+  } else if (pin == 2) {
+    // Output GPIOs state
+    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[1] = enabled;
+  }
+}
+
+
+
 bool Mqtt::initialize()
 {
     WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
         client.setServer(SERVER, PORT);
-        //client.setCallback(onMessage);
+        client.setCallback(callback);
+        // client.subscribe("v1/devices/me/rpc/request/+");
         //connectClient();
     }
 
@@ -121,6 +193,9 @@ bool Mqtt::connectClient()
 
         if (client.connect(clientID, TOKEN, NULL)) {
             Serial.println("Client connected");
+            client.subscribe("v1/devices/me/rpc/request/+");
+            Serial.println("Sending current GPIO status ...");
+            client.publish("v1/devices/me/attributes", get_gpio_status().c_str());
             break;
         }
         else {
@@ -185,4 +260,20 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         Serial.println("Failed parsing json");
         return;
     }
+
+    // Check request method
+    String methodName = String((const char*)data["method"]);
+
+    if (methodName.equals("getGpioStatus")) {
+        // Reply with GPIO status
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        client.publish(responseTopic.c_str(), "true");
+    } else if (methodName.equals("setGpioStatus")) {
+        // Update GPIO status and reply
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        client.publish(responseTopic.c_str(), "false");
+    }
 }
+

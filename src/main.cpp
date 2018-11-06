@@ -29,8 +29,11 @@ void setup() {
   delay(2000);
 
   display.initialize();
+  display.singleMessage("Init pulse");
   pulse.initialize();
+  display.singleMessage("Init motion");
   motion.initialize();
+  display.singleMessage("Init mqtt");
   mqtt.initialize();
   mqtt.update();
 
@@ -100,3 +103,4 @@ Notater:
 - Hvis MPU6050 sensoren ikke gir fornuftige resultater må den kobles av og på igjen og wemos resettes. 
 
 */
+
