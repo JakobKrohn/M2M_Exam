@@ -12,7 +12,7 @@ unsigned long beatShownMillis = 0;
 
 String displayedBpm, displayedMotion = "";
 
-bool displayEnabled = false;
+bool displayEnabled = true;
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
@@ -22,7 +22,7 @@ void Display::initialize()
 
     u8g2.begin();
 
-    enable(1);
+    // enable(1);
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_9x15_mf);
@@ -52,9 +52,17 @@ void Display::enable(bool enabled)
     if (displayEnabled == enabled) {
         return;
     }
+    
     displayEnabled = enabled;
 
-    (displayEnabled) ? (u8g2.setPowerSave(0)) : (u8g2.setPowerSave(1));
+    if (displayEnabled) {
+        u8g2.setPowerSave(0);
+    }
+    else {
+        u8g2.setPowerSave(1);
+    }
+
+    //(displayEnabled) ? (u8g2.setPowerSave(0)) : (u8g2.setPowerSave(1));
 }
 
 void Display::setupAngleAndMovement()
@@ -109,7 +117,7 @@ void Display::bpm(String bpm)
 void Display::beat()
 {
     if (!isEnabled()) { return; }
-    
+
     // Font used: 
     // https://github.com/olikraus/u8g2/wiki/fntgrpx11
     u8g2.setFont(u8g2_font_cursor_tf);

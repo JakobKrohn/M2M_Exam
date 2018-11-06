@@ -12,12 +12,14 @@ const long interval = 1000;
 unsigned long previousMillis = 0;
 long timer = 0;
 
+float batteryLevel = 0;
+
 Display display;
 Motion motion;
 Pulse pulse;
 Mqtt mqtt;
 
-float manageBattery();
+void manageBattery();
 
 void setup() {
 
@@ -39,7 +41,7 @@ void setup() {
 auto counter = 0;
 void loop() {
 
-  auto loopStart = millis();
+  //auto loopStart = millis();
 
   display.update();
   
@@ -59,31 +61,35 @@ void loop() {
 
     manageBattery();
 
-    mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement());
+    mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement(), batteryLevel);
 
     previousMillis = currentMillis;
   }
 
-  auto loopStop = millis();
-  auto loopTime = loopStop - loopStart;
+  //auto loopStop = millis();
+  //auto loopTime = loopStop - loopStart;
   //Serial.print("Loop time: ");
   //Serial.println(loopStop - loopStart);
 
 }
 
-float manageBattery() {
+void manageBattery() {
 
   unsigned int raw = analogRead(BATTERY_PIN);
-  float batterVoltage = (raw / 1023.0) * 4.2;
+  //float batterVoltage = (raw / 1023.0) * 4.2;
+  batteryLevel = (raw / 1023.0) * 4.2;
+
+  //batteryLevel = batterVoltage;
 
   Serial.print("Battery voltage: ");
-  Serial.println(batterVoltage);
+  Serial.println(batteryLevel);
 
-  if (batterVoltage < 3.3) {
-    display.enable(0);
+  if (batteryLevel < 4.2) {
+    Serial.println("Off dislay");
+    display.enable(false);
+  } else {
+    display.enable(true);
   }
-
-  return batterVoltage;
 
 }
 

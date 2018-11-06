@@ -13,7 +13,7 @@ class Mqtt
 
         void update();
 
-        void sendData(int bpm, int motion);
+        void sendData(int bpm, int motion, float batteryLevel);
 
     private:
 
@@ -22,6 +22,8 @@ class Mqtt
         bool connectClient();
 
         char * generateClientID();
+
+        static void onMessage(const char * topic, byte * payload, unsigned int length);
 
 };
 

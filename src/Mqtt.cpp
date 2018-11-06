@@ -2,6 +2,7 @@
 #include "Mqtt.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 // ESP8266WiFi library:
 // https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WiFi
@@ -15,8 +16,12 @@ const char * PASSWORD = "244466666";
 
 // THINGSBOARD CREDENTIALS
 const char * SERVER = "demo.thingsboard.io";
-const char * TOKEN = "6prJoiaVd1l26vipj7RR";
+// DkT1V7i4fRXCbdubO5Vj
+const char * TOKEN = "PKhy2RTSpqasio6nfAPZ";
+//const char * TOKEN = "yIXJKhVxXEk8A0qejvQB";
 const int PORT = 1883;
+
+// WemosD1 token: 6prJoiaVd1l26vipj7RR
 
 unsigned long lastSend = 0;
 
@@ -25,8 +30,11 @@ PubSubClient client(wifiClient);
 
 bool Mqtt::initialize()
 {
+    WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
         client.setServer(SERVER, PORT);
+        //client.setCallback(onMessage);
+        //connectClient();
     }
 
     return false;
@@ -45,7 +53,7 @@ void Mqtt::update()
     client.loop();
 }
 
-void Mqtt::sendData(int bpm, int motion)
+void Mqtt::sendData(int bpm, int motion, float batteryLevel)
 {
     String payload = "{";
     payload += "\"bpm\":";
@@ -53,9 +61,14 @@ void Mqtt::sendData(int bpm, int motion)
     payload += ",";
     payload += "\"motion\":";
     payload += String(motion);
+    payload += ",";
+    payload += "\"battery\":";
+    payload += String(batteryLevel);
     payload += "}";
 
     const char * attributes = payload.c_str();
+
+    Serial.println(attributes);
 
     client.publish("v1/devices/me/telemetry", attributes);
 }
@@ -148,4 +161,28 @@ char * Mqtt::generateClientID()
     clientID[8]='\0';
 
     return clientID;
+}
+
+void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
+{
+    // https://thingsboard.io/docs/samples/esp8266/gpio/
+    Serial.println("Message received");
+
+    char json[length+1];
+    strncpy(json, (char*) payload, length);
+    json[length] = '\0';
+
+    Serial.print("Topic: ");
+    Serial.print(topic);
+    Serial.print(" Message: ");
+    Serial.println(json);
+
+    // Decode JSON request
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& data = jsonBuffer.parseObject((char*) json);
+
+    if (!data.success()) {
+        Serial.println("Failed parsing json");
+        return;
+    }
 }
