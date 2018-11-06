@@ -57,12 +57,12 @@ void loop() {
   display.bpm(String(pulse.getCurrentBpm()));
   display.motion(String(motion.getCurrentMovement()));
 
+  manageBattery();
+
   mqtt.update();
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
-
-    manageBattery();
 
     mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement(), batteryLevel);
 
@@ -84,11 +84,10 @@ void manageBattery() {
 
   //batteryLevel = batterVoltage;
 
-  Serial.print("Battery voltage: ");
-  Serial.println(batteryLevel);
+  //Serial.print("Battery voltage: ");
+  //Serial.println(batteryLevel);
 
-  if (batteryLevel < 4.2) {
-    Serial.println("Off dislay");
+  if (batteryLevel < 4) {
     display.enable(false);
   } else {
     display.enable(true);

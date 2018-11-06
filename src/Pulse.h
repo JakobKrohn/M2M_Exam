@@ -14,8 +14,6 @@ class Pulse
         // Returns true if a beat is detected
         bool update();
 
-        //String getBpmStr() const;
-
         int getCurrentBpm() const;
 
     private:

@@ -30,6 +30,34 @@ PubSubClient client(wifiClient);
 
 boolean gpioState[] = {false, false};
 
+String get_gpio_status() {
+  // Prepare gpios JSON payload string
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  data[String(0)] = gpioState[0] ? true : false;
+  data[String(2)] = gpioState[1] ? true : false;
+  char payload[256];
+  data.printTo(payload, sizeof(payload));
+  String strPayload = String(payload);
+  Serial.print("Get gpio status: ");
+  Serial.println(strPayload);
+  return strPayload;
+}
+
+void set_gpio_status(int pin, boolean enabled) {
+  if (pin == 0) {
+    // Output GPIOs state
+    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[0] = enabled;
+  } else if (pin == 2) {
+    // Output GPIOs state
+    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[1] = enabled;
+  }
+}
+
 void callback(const char * topic, byte * payload, unsigned int length)
 {
     // https://thingsboard.io/docs/samples/esp8266/gpio/
@@ -60,41 +88,13 @@ void callback(const char * topic, byte * payload, unsigned int length)
         // Reply with GPIO status
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), "true");
+        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     } else if (methodName.equals("setGpioStatus")) {
         // Update GPIO status and reply
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), "false");
+        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     }
-}
-
-String get_gpio_status() {
-  // Prepare gpios JSON payload string
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data[String(0)] = gpioState[0] ? true : false;
-  data[String(2)] = gpioState[1] ? true : false;
-  char payload[256];
-  data.printTo(payload, sizeof(payload));
-  String strPayload = String(payload);
-  Serial.print("Get gpio status: ");
-  Serial.println(strPayload);
-  return strPayload;
-}
-
-void set_gpio_status(int pin, boolean enabled) {
-  if (pin == 0) {
-    // Output GPIOs state
-    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[0] = enabled;
-  } else if (pin == 2) {
-    // Output GPIOs state
-    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[1] = enabled;
-  }
 }
 
 
@@ -140,7 +140,7 @@ void Mqtt::sendData(int bpm, int motion, float batteryLevel)
 
     const char * attributes = payload.c_str();
 
-    Serial.println(attributes);
+    // Serial.println(attributes);
 
     client.publish("v1/devices/me/telemetry", attributes);
 }

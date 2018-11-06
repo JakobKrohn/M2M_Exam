@@ -12,7 +12,6 @@ std::vector<byte> measurements(MEASURE_SIZE);
 byte measureCounter = 0;
 
 float lastBeat = 0;       // Stores time since last beat
-long timeNoBeat = 0;      // Stores time without a beat, used to reset bpm to null
 
 float measuredBpm = 0;    // The actual measured bpm
 int currentBpm = 0;       // The calculated bpm, average of last 8 readings
@@ -54,15 +53,6 @@ bool Pulse::update()
     return false;
 }
 
-/*String Pulse::getBpmStr() const
-{
-    if (beatAvg == 0) {
-        return "--";
-    }
-
-    return String(beatAvg);
-}*/
-
 int Pulse::getCurrentBpm() const
 {
     return currentBpm;
@@ -74,17 +64,22 @@ void Pulse::calculateCurrentBpm(int timeSinceLastBeat)
 {
     measuredBpm = 60 / (timeSinceLastBeat / 1000.0);
 
-    // Store reading in vector
-    measurements[measureCounter++] = (byte)measuredBpm;
+    if (measuredBpm < 255 && measuredBpm > 20) {
 
-    // If measureCounter is measure_size set it back to 0
-    measureCounter %= MEASURE_SIZE;
+        // Store reading in vector
+        measurements[measureCounter++] = (byte)measuredBpm;
 
-    // Take average of readings
-    currentBpm = 0;
-    for (byte x = 0; x < MEASURE_SIZE; x++) {
-        currentBpm += measurements[x];
+        // If measureCounter is measure_size set it back to 0
+        measureCounter %= MEASURE_SIZE;
+
+        // Take average of readings
+        currentBpm = 0;
+        for (byte x = 0; x < MEASURE_SIZE; x++) {
+            currentBpm += measurements[x];
+        }
+
+        currentBpm /= MEASURE_SIZE;
+
     }
-
-    currentBpm /= MEASURE_SIZE;
+    
 }

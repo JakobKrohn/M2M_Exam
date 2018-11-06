@@ -22,8 +22,6 @@ void Display::initialize()
 
     u8g2.begin();
 
-    // enable(1);
-
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.setFontMode(0);
@@ -61,8 +59,6 @@ void Display::enable(bool enabled)
     else {
         u8g2.setPowerSave(1);
     }
-
-    //(displayEnabled) ? (u8g2.setPowerSave(0)) : (u8g2.setPowerSave(1));
 }
 
 void Display::setupAngleAndMovement()
@@ -106,7 +102,6 @@ void Display::bpm(String bpm)
 
     displayedBpm = bpm;
     
-    //bpm = addSpacing(bpm);
     addSpacing(bpm);
     
     u8g2.setFont(u8g2_font_9x15_mf);
