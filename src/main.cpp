@@ -29,15 +29,57 @@ void setup() {
   delay(2000);
 
   display.initialize();
-  display.singleMessage("Init pulse");
+  display.topLineMessage("Please wait");
+
+  display.bottomLineMessage("Init pulse");
   pulse.initialize();
-  display.singleMessage("Init motion");
+
+  display.bottomLineMessage("Init motion");
   motion.initialize();
-  display.singleMessage("Init mqtt");
+
+  display.bottomLineMessage("Init mqtt");
   mqtt.initialize();
   mqtt.update();
 
+  // Greet user
+  display.clearScreen();
+  display.topLineMessage("Welcome!");
+  delay(2000);
+
+  // Explain how to use pulse sensor
+  display.topLineMessage("Set finger on");
+  display.bottomLineMessage("the red light");
+  
+  // Wait until user places finger on sensor
+  while (!pulse.update()) {
+    yield();
+  }
+
   display.setupAngleAndMovement();
+
+  // Show pulse and motion for some time
+  auto start = millis();
+  while (millis() - start < 50000) {
+    display.update();
+    motion.update();
+    if (pulse.update()) {
+      display.beat();
+    }
+    display.bpm(String(pulse.getCurrentBpm()));
+    display.motion(motion.getMovementString());
+  }
+
+  Serial.println("Tutorial over");
+
+  display.clearScreen();
+  display.topLineMessage("Sit back");
+  display.bottomLineMessage("and enjoy!");
+  delay(5000);
+
+  display.clearScreen();
+  display.enable(false);
+
+  //display.setupAngleAndMovement();
 
 }
 
@@ -46,19 +88,21 @@ void loop() {
 
   //auto loopStart = millis();
 
-  display.update();
+  //display.update();
   
-  if (pulse.update()) {
+  /*if (pulse.update()) {
     display.beat();
-  }
+  }*/
 
-  motion.update();
+  //motion.update();
 
-  display.bpm(String(pulse.getCurrentBpm()));
-  display.motion(String(motion.getCurrentMovement()));
+  //display.bpm(String(pulse.getCurrentBpm()));
+  //display.motion(String(motion.getCurrentMovement()));
 
   manageBattery();
 
+  pulse.update();
+  motion.update();
   mqtt.update();
   
   unsigned long currentMillis = millis();
@@ -79,18 +123,16 @@ void loop() {
 void manageBattery() {
 
   unsigned int raw = analogRead(BATTERY_PIN);
-  //float batterVoltage = (raw / 1023.0) * 4.2;
-  batteryLevel = (raw / 1023.0) * 4.2;
 
-  //batteryLevel = batterVoltage;
+  batteryLevel = (raw / 1023.0) * 4.2;
 
   //Serial.print("Battery voltage: ");
   //Serial.println(batteryLevel);
 
   if (batteryLevel < 4) {
-    display.enable(false);
+    //display.enable(false);
   } else {
-    display.enable(true);
+    //display.enable(true);
   }
 
 }

@@ -15,6 +15,12 @@ class Display
 
         void enable(bool enabled);
 
+        void clearScreen();
+
+        void topLineMessage(const char * message);
+
+        void bottomLineMessage(const char * message);
+
         void setupAngleAndMovement();
 
         void singleMessage(const char * message);

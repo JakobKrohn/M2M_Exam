@@ -21,12 +21,13 @@ void Display::initialize()
     Serial.print("\nInitializing Display ... ");
 
     u8g2.begin();
+    u8g2.setPowerSave(0);
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.setFontMode(0);
-    u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Initializing");
-    u8g2.sendBuffer();
+    //u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Initializing");
+    //u8g2.sendBuffer();
 
     Serial.println("done");
 }
@@ -59,6 +60,27 @@ void Display::enable(bool enabled)
     else {
         u8g2.setPowerSave(1);
     }
+}
+
+void Display::clearScreen()
+{
+    u8g2.clearBuffer();
+}
+
+void Display::topLineMessage(const char * msg)
+{
+    u8g2.setFont(u8g2_font_9x15_mf);
+    u8g2.drawStr(0, BOTTOM_Y, "             ");
+    u8g2.drawStr(0, TOP_Y, msg);
+    u8g2.sendBuffer();
+}
+
+void Display::bottomLineMessage(const char * msg)
+{
+    u8g2.setFont(u8g2_font_9x15_mf);
+    u8g2.drawStr(0, BOTTOM_Y, "             ");
+    u8g2.drawStr(0, BOTTOM_Y, msg);
+    u8g2.sendBuffer();
 }
 
 void Display::setupAngleAndMovement()

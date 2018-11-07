@@ -17,6 +17,8 @@ class Motion
 
         int getCurrentMovement() const;
 
+        String getMovementString() const;
+
     private:
 
         void calculatePercentage();

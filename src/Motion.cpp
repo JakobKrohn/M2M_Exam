@@ -67,6 +67,21 @@ int Motion::getCurrentMovement() const
     return currentMovement;
 }
 
+String Motion::getMovementString() const
+{
+    if (currentMovement > 1000) {
+        return "----";
+    } else if (currentMovement > 100) {
+        return "---";
+    } else if (currentMovement > 10) {
+        return "--";
+    } else if (currentMovement > 1) {
+        return "-";
+    } else {
+        return "";
+    }
+}
+
 // Private
 
 void Motion::calculatePercentage()
