@@ -7,11 +7,13 @@
 const int TOP_Y = 10;
 const int BOTTOM_Y = 29;
 const long heartBeatInterval = 200;
+const long enableInterval = 50000;
 
 unsigned long beatShownMillis = 0;
 
 String displayedBpm, displayedMotion = "";
 
+unsigned int enableTime = 0; 
 bool displayEnabled = true;
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -26,8 +28,6 @@ void Display::initialize()
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.setFontMode(0);
-    //u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, "Initializing");
-    //u8g2.sendBuffer();
 
     Serial.println("done");
 }
@@ -38,11 +38,17 @@ void Display::update()
 
     unsigned long currentMillis = millis();
 
+    // Manage beat
     if (currentMillis - beatShownMillis >= heartBeatInterval) {
         u8g2.setFont(u8g2_font_cursor_tf);
         u8g2.drawGlyph(114, 8, 0136);
         u8g2.sendBuffer();
         beatShownMillis = currentMillis;
+    }
+
+    // Manage enabling
+    if (currentMillis - enableTime >= enableInterval) {
+        // enable(false);
     }
 }
 
@@ -56,6 +62,7 @@ void Display::enable(bool enabled)
 
     if (displayEnabled) {
         u8g2.setPowerSave(0);
+        enableTime = millis();
     }
     else {
         u8g2.setPowerSave(1);
@@ -127,7 +134,7 @@ void Display::bpm(String bpm)
     addSpacing(bpm);
     
     u8g2.setFont(u8g2_font_9x15_mf);
-    u8g2.drawStr(65, TOP_Y, bpm.c_str());
+    u8g2.drawStr(60, TOP_Y, bpm.c_str());
     u8g2.sendBuffer();
 }
 
@@ -147,7 +154,7 @@ void Display::beat()
 
 void Display::addSpacing(String & str) const
 {
-    int offset = 4;
+    int offset = 5;
     int add = offset - str.length();
 
     for (int i = 0; i < add; i++) {

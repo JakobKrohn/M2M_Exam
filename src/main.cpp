@@ -8,6 +8,7 @@
 
 const int BATTERY_PIN = A0;
 const long interval = 1000;
+const long tutorialInterval = 50000;
 
 unsigned long previousMillis = 0;
 long timer = 0;
@@ -52,6 +53,7 @@ void setup() {
   
   // Wait until user places finger on sensor
   while (!pulse.update()) {
+    // TODO go to sleep after some time here
     yield();
   }
 
@@ -83,7 +85,6 @@ void setup() {
 
 }
 
-auto counter = 0;
 void loop() {
 
   //auto loopStart = millis();
@@ -101,16 +102,25 @@ void loop() {
 
   manageBattery();
 
-  pulse.update();
+  if (pulse.update()) {
+    display.beat();
+  }
+
+  display.update();
+
   motion.update();
+  
   mqtt.update();
+
+  display.bpm(String(pulse.getCurrentBpm()));
+  display.motion(motion.getMovementString());
   
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
 
     mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement(), batteryLevel);
 
-    previousMillis = currentMillis;
+    previousMillis = millis();
   }
 
   //auto loopStop = millis();

@@ -15,13 +15,9 @@ const char * SSID = "K2-jakob";
 const char * PASSWORD = "244466666";
 
 // THINGSBOARD CREDENTIALS
-const char * SERVER = "demo.thingsboard.io";
-// DkT1V7i4fRXCbdubO5Vj
-const char * TOKEN = "PKhy2RTSpqasio6nfAPZ";
-//const char * TOKEN = "yIXJKhVxXEk8A0qejvQB";
+const char * SERVER = "cloud.thingsboard.io";
+const char * TOKEN = "vSiGoEgh9NprdCyGRmor";
 const int PORT = 1883;
-
-// WemosD1 token: 6prJoiaVd1l26vipj7RR
 
 unsigned long lastSend = 0;
 
@@ -58,55 +54,12 @@ void set_gpio_status(int pin, boolean enabled) {
   }
 }
 
-void callback(const char * topic, byte * payload, unsigned int length)
-{
-    // https://thingsboard.io/docs/samples/esp8266/gpio/
-    Serial.println("Message received");
-
-    char json[length+1];
-    strncpy(json, (char*) payload, length);
-    json[length] = '\0';
-
-    Serial.print("Topic: ");
-    Serial.print(topic);
-    Serial.print(" Message: ");
-    Serial.println(json);
-
-    // Decode JSON request
-    StaticJsonBuffer<200> jsonBuffer;
-    JsonObject& data = jsonBuffer.parseObject((char*) json);
-
-    if (!data.success()) {
-        Serial.println("Failed parsing json");
-        return;
-    }
-
-    // Check request method
-    String methodName = String((const char*)data["method"]);
-
-    if (methodName.equals("getGpioStatus")) {
-        // Reply with GPIO status
-        String responseTopic = String(topic);
-        responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-    } else if (methodName.equals("setGpioStatus")) {
-        // Update GPIO status and reply
-        String responseTopic = String(topic);
-        responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-    }
-}
-
-
-
 bool Mqtt::initialize()
 {
     WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
         client.setServer(SERVER, PORT);
-        client.setCallback(callback);
-        // client.subscribe("v1/devices/me/rpc/request/+");
-        //connectClient();
+        client.setCallback(onMessage);
     }
 
     return false;
@@ -268,12 +221,14 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         // Reply with GPIO status
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), "true");
+        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     } else if (methodName.equals("setGpioStatus")) {
         // Update GPIO status and reply
+        set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), "false");
+        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     }
 }
+
 

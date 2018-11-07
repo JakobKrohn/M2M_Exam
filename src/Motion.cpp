@@ -69,16 +69,16 @@ int Motion::getCurrentMovement() const
 
 String Motion::getMovementString() const
 {
-    if (currentMovement > 1000) {
+    if (currentMovement > 90) {
+        return "-----";
+    } else if (currentMovement > 50) {
         return "----";
-    } else if (currentMovement > 100) {
-        return "---";
     } else if (currentMovement > 10) {
-        return "--";
+        return "---";
     } else if (currentMovement > 1) {
-        return "-";
+        return "--";
     } else {
-        return "";
+        return "-";
     }
 }
 
@@ -112,8 +112,8 @@ void Motion::calculatePercentage()
 
     // Calculate current movement
     currentMovement = percentX + percentY + percentZ;
-    if (currentMovement > 1000) {
-        currentMovement = 1000;
+    if (currentMovement > 100) {
+        currentMovement = 100;
     }
 
     // Add this reading to vector
