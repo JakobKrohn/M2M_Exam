@@ -8,7 +8,6 @@
 
 const int BATTERY_PIN = A0;
 const long interval = 1000;
-const long tutorialInterval = 50000;
 
 unsigned long previousMillis = 0;
 long timer = 0;
@@ -21,6 +20,7 @@ Pulse pulse;
 Mqtt mqtt;
 
 void manageBattery();
+void update();
 
 void setup() {
 
@@ -40,7 +40,6 @@ void setup() {
 
   display.bottomLineMessage("Init mqtt");
   mqtt.initialize();
-  mqtt.update();
 
   // Greet user
   display.clearScreen();
@@ -62,13 +61,7 @@ void setup() {
   // Show pulse and motion for some time
   auto start = millis();
   while (millis() - start < 50000) {
-    display.update();
-    motion.update();
-    if (pulse.update()) {
-      display.beat();
-    }
-    display.bpm(String(pulse.getCurrentBpm()));
-    display.motion(motion.getMovementString());
+    update();
   }
 
   Serial.println("Tutorial over");
@@ -76,57 +69,18 @@ void setup() {
   display.clearScreen();
   display.topLineMessage("Sit back");
   display.bottomLineMessage("and enjoy!");
+
+  // Can't delay here!
   delay(5000);
 
   display.clearScreen();
   display.enable(false);
 
-  //display.setupAngleAndMovement();
-
 }
 
 void loop() {
-
-  //auto loopStart = millis();
-
-  //display.update();
   
-  /*if (pulse.update()) {
-    display.beat();
-  }*/
-
-  //motion.update();
-
-  //display.bpm(String(pulse.getCurrentBpm()));
-  //display.motion(String(motion.getCurrentMovement()));
-
-  manageBattery();
-
-  if (pulse.update()) {
-    display.beat();
-  }
-
-  display.update();
-
-  motion.update();
-  
-  mqtt.update();
-
-  display.bpm(String(pulse.getCurrentBpm()));
-  display.motion(motion.getMovementString());
-  
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-
-    mqtt.sendData(pulse.getCurrentBpm(), motion.getAverageMovement(), batteryLevel);
-
-    previousMillis = millis();
-  }
-
-  //auto loopStop = millis();
-  //auto loopTime = loopStop - loopStart;
-  //Serial.print("Loop time: ");
-  //Serial.println(loopStop - loopStart);
+  update();
 
 }
 
@@ -139,19 +93,23 @@ void manageBattery() {
   //Serial.print("Battery voltage: ");
   //Serial.println(batteryLevel);
 
-  if (batteryLevel < 4) {
-    //display.enable(false);
-  } else {
-    //display.enable(true);
-  }
-
 }
 
-/*
+void update() {
 
-Notater: 
+  manageBattery();
 
-- Hvis MPU6050 sensoren ikke gir fornuftige resultater må den kobles av og på igjen og wemos resettes. 
+  display.update();
+  motion.update();
 
-*/
+  if (pulse.update()) {
+    display.beat();
+  }
+
+  mqtt.update(pulse.getCurrentBpm(), motion.getAverageMovement(), batteryLevel);
+
+  display.bpm(String(pulse.getCurrentBpm()));
+  display.motion(motion.getMovementString());
+
+}
 

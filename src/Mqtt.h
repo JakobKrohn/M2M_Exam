@@ -11,7 +11,7 @@ class Mqtt
 
         bool initialize();
 
-        void update();
+        void update(int bpm, int motion, float batteryLevel);
 
         void sendData(int bpm, int motion, float batteryLevel);
 

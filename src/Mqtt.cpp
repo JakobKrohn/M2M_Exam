@@ -65,13 +65,14 @@ bool Mqtt::initialize()
     return false;
 }
 
-void Mqtt::update()
+void Mqtt::update(int bpm, int motion, float batteryLevel)
 {
     if ( !client.connected() ) {
         connectClient();
     }
 
     if ( millis() - lastSend > 1000 ) { 
+        sendData(bpm, motion, batteryLevel);
         lastSend = millis();
     }
 
@@ -93,7 +94,7 @@ void Mqtt::sendData(int bpm, int motion, float batteryLevel)
 
     const char * attributes = payload.c_str();
 
-    // Serial.println(attributes);
+    Serial.println(attributes);
 
     client.publish("v1/devices/me/telemetry", attributes);
 }
