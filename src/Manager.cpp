@@ -30,8 +30,18 @@ void Manager::initialize()
     _display.bottomLineMessage("Init mqtt");
     _mqtt.initialize();
     _mqtt.update(0, 0, 0);
-    _mqtt.setCallback(setState);
-    _mqtt.setCallback(getState);
+
+    // Set callback for setState
+    _mqtt.setCallback([this] (int target, bool enabled) { this->setState(target, enabled); });
+
+    // Set callback for getState
+    _mqtt.setCallback([this] (int target) -> bool* { return this->getState(target); });
+
+    //_mqtt.setCallback(setState);
+    
+    //_mqtt.setCallback(getState);
+
+    //_mqtt.setCallback(this, &Manager::getState);
 }
 
 void Manager::start()
@@ -45,7 +55,7 @@ void Manager::start()
     _display.topLineMessage("Set finger on");
     _display.bottomLineMessage("the red light");
 
-    while (!_pulse.update()) {
+    /*while (!_pulse.update()) {
         // TODO go to sleep after some time here
         yield();
         // ESP.deepSleep(0);
@@ -57,7 +67,7 @@ void Manager::start()
     while (millis() - start < TUTORIAL_TIME) {
         yield();
         update();
-    }
+    }*/
 
     _display.clearScreen();
     _display.topLineMessage("Sit back");
@@ -99,12 +109,17 @@ void Manager::readBattery()
     batteryLevel = (raw / 1023.0) * 4.2;
 }
 
-bool * Manager::getState()
+bool* Manager::getState(int target)
 {
-    Serial.println("Get state manager");
+    //bool gpioState[] = {recording, _display.isEnabled()};
+    static bool gpioState[] = {true, true};
+
+    Serial.println("Get state from MANAGER");
+
+    return gpioState;
 }
 
 void Manager::setState(int target, bool enabled)
 {
-    Serial.println("Set state manager");
+    Serial.println("Set state from MANAGER");
 }

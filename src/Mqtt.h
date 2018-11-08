@@ -11,9 +11,14 @@ class Mqtt
 
         bool initialize();
 
+        void setCallback(std::function<void(int, bool)> callback);
+
+        void setCallback(std::function<bool*(int)> callback);
+
         void setCallback( void setStateCallback(int target, bool enabled) );
 
-        void setCallback( bool * getState() );
+        // void setCallback( bool * getState() );
+        //template<class T> void setCallback( T* const object, bool*(T::* const mf)() );
 
         void update(int bpm, int motion, float batteryLevel);
 
@@ -29,9 +34,17 @@ class Mqtt
 
         void onMessage(const char * topic, byte * payload, unsigned int length);
 
-        void (*setState)(int target, bool state);
+        //virtual bool * getState();
 
-        bool * (*getState)();
+        //virtual void setState(int target, bool enable);
+
+        std::function<void(int, bool)> setStateAA;
+
+        std::function<bool*(int)> getStateAA;
+
+        //void (*setState)(int target, bool state);
+
+        //bool * (*getState)();
 
 };
 

@@ -32,9 +32,9 @@ class Manager
 
         void readBattery();
 
-        static bool * getState();
+        bool* getState(int target);
 
-        static void setState(int target, bool enable);
+        void setState(int target, bool enable);
 
 };
 

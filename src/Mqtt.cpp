@@ -54,12 +54,8 @@ void set_gpio_status(int pin, boolean enabled) {
   }
 }
 
-//  void (*setStateCallback)(int target, bool state), bool * (*getStateCallback)() 
 bool Mqtt::initialize()
 {
-    //setState = setStateCallback;
-    //getState = getStateCallback;
-
     // #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
 
     WiFi.begin(SSID, PASSWORD);
@@ -73,15 +69,27 @@ bool Mqtt::initialize()
     return false;
 }
 
-void Mqtt::setCallback( void setStateCallback(int target, bool enabled) )
+void Mqtt::setCallback(std::function<void(int, bool)> callback)
 {
-    setState = setStateCallback;
+    setStateAA = callback;
 }
 
-void Mqtt::setCallback( bool * getStateCallback() )
+void Mqtt::setCallback(std::function<bool*(int)> callback)
 {
-    getState = getStateCallback;
+    getStateAA = callback;
 }
+
+/*void Mqtt::setCallback( void setStateCallback(int target, bool enabled) )
+{
+    setState = setStateCallback;
+}*/
+
+// void Mqtt::setCallback( bool * getStateCallback() )
+//template<class T> void Mqtt::setCallback( T* const object, void(T::* const mf)(int, bool) )
+/*template<class T> void Mqtt::setCallback( T* const object, bool*(T::* const mf)() )
+{
+    //getState = getStateCallback;
+}*/
 
 void Mqtt::update(int bpm, int motion, float batteryLevel)
 {
@@ -240,13 +248,38 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
         //client.publish(responseTopic.c_str(), getState().c_str());
-        getState();
+        
+        auto x = getStateAA(0);
+        Serial.println("Values fetched from manager in Mqtt: ");
+        if (*(x+0)) {
+            Serial.println("0 is true");
+        } 
+        if (*(x+1)) {
+            Serial.println("1 is true");
+        }
+        Serial.println("Done");
+        //getState();
+
         //getState();
         //char * x =  generateClientID();
         client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     } else if (methodName.equals("setGpioStatus")) {
         // Update GPIO status and reply
-        setState(1, false);
+        
+        setStateAA(1, false);
+        auto x = getStateAA(0);
+        Serial.println("Values fetched from manager in Mqtt: ");
+        if (*(x+0)) {
+            Serial.println("0 is true");
+        } 
+        if (*(x+1)) {
+            Serial.println("1 is true");
+        }
+        //Serial.println(x);
+        
+        Serial.println("Done");
+        //setState(1, false);
+        
         set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
@@ -254,3 +287,18 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
     }
 }
 
+/*bool * Mqtt::getState()
+{
+
+    //bool gpioState[] = {recording, _display.isEnabled()};
+    static bool gpioState[] = {false, false};
+
+    Serial.println("Get state from MQTT");
+
+    return gpioState;
+}
+
+void Mqtt::setState(int target, bool enabled)
+{
+    Serial.println("Set state from MQTT");
+}*/
