@@ -11,9 +11,11 @@ class Mqtt
 
         bool initialize();
 
-        void update(int bpm, int motion, float batteryLevel);
+        void setCallback( void setStateCallback(int target, bool enabled) );
 
-        void sendData(int bpm, int motion, float batteryLevel);
+        void setCallback( bool * getState() );
+
+        void update(int bpm, int motion, float batteryLevel);
 
     private:
 
@@ -21,9 +23,15 @@ class Mqtt
 
         bool connectClient();
 
+        void sendData(int bpm, int motion, float batteryLevel);
+
         char * generateClientID();
 
-        static void onMessage(const char * topic, byte * payload, unsigned int length);
+        void onMessage(const char * topic, byte * payload, unsigned int length);
+
+        void (*setState)(int target, bool state);
+
+        bool * (*getState)();
 
 };
 

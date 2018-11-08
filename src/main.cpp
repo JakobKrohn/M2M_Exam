@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <Wire.h>
+#include "Manager.h"
+/*#include <Wire.h>
 
 #include "Display.h"
 #include "Motion.h"
@@ -14,6 +15,12 @@ long timer = 0;
 
 float batteryLevel = 0;
 
+// GPIO 0
+bool recording = false;
+
+// GPIO 2
+// Display active ?
+
 Display display;
 Motion motion;
 Pulse pulse;
@@ -21,9 +28,16 @@ Mqtt mqtt;
 
 void manageBattery();
 void update();
+bool * getState();
+void setState(int target, bool state);
+*/
+
+Manager manager;
 
 void setup() {
-
+  manager.initialize();
+  manager.start();
+/*
   Serial.begin(115200);
   Wire.begin(D2, D1);
 
@@ -39,7 +53,10 @@ void setup() {
   motion.initialize();
 
   display.bottomLineMessage("Init mqtt");
+  //mqtt.initialize(setState, getState);
   mqtt.initialize();
+  // Delay in tutorial - should connect here?
+  // mqtt.update();
 
   // Greet user
   display.clearScreen();
@@ -51,14 +68,14 @@ void setup() {
   display.bottomLineMessage("the red light");
   
   // Wait until user places finger on sensor
-  while (!pulse.update()) {
+  //while (!pulse.update()) {
     // TODO go to sleep after some time here
-    yield();
-  }
-
-  display.setupAngleAndMovement();
+    //yield();
+    // ESP.deepSleep(0);
+  //}
 
   // Show pulse and motion for some time
+  display.setupAngleAndMovement();
   auto start = millis();
   while (millis() - start < 50000) {
     update();
@@ -72,18 +89,19 @@ void setup() {
 
   // Can't delay here!
   delay(5000);
+  // display.enable(false, time to turn off);
 
   display.clearScreen();
   display.enable(false);
-
+*/
 }
 
 void loop() {
-  
-  update();
+  manager.update();
+  //update();
 
 }
-
+/*
 void manageBattery() {
 
   unsigned int raw = analogRead(BATTERY_PIN);
@@ -113,3 +131,26 @@ void update() {
 
 }
 
+bool * getState() {
+
+  // Get gpio status: {"0":false,"2":false}
+  static bool gpioState[] = {recording, display.isEnabled()};
+
+  Serial.println("Get state");
+
+  return gpioState;
+
+}
+
+void setState(int target, bool state) {
+
+  Serial.println("Set State");
+
+  if (target == 0) {
+    recording = state;
+  }
+  else if (target == 2) {
+    display.enable(state);
+  }
+
+}*/

@@ -54,15 +54,33 @@ void set_gpio_status(int pin, boolean enabled) {
   }
 }
 
+//  void (*setStateCallback)(int target, bool state), bool * (*getStateCallback)() 
 bool Mqtt::initialize()
 {
+    //setState = setStateCallback;
+    //getState = getStateCallback;
+
+    // #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
+
     WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
         client.setServer(SERVER, PORT);
-        client.setCallback(onMessage);
+        // https://github.com/knolleary/pubsubclient/issues/115
+        client.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->onMessage(topic, payload, length); });
+        //client.setCallback(onMessage);
     }
 
     return false;
+}
+
+void Mqtt::setCallback( void setStateCallback(int target, bool enabled) )
+{
+    setState = setStateCallback;
+}
+
+void Mqtt::setCallback( bool * getStateCallback() )
+{
+    getState = getStateCallback;
 }
 
 void Mqtt::update(int bpm, int motion, float batteryLevel)
@@ -77,26 +95,6 @@ void Mqtt::update(int bpm, int motion, float batteryLevel)
     }
 
     client.loop();
-}
-
-void Mqtt::sendData(int bpm, int motion, float batteryLevel)
-{
-    String payload = "{";
-    payload += "\"bpm\":";
-    payload += String(bpm);
-    payload += ",";
-    payload += "\"motion\":";
-    payload += String(motion);
-    payload += ",";
-    payload += "\"battery\":";
-    payload += String(batteryLevel);
-    payload += "}";
-
-    const char * attributes = payload.c_str();
-
-    Serial.println(attributes);
-
-    client.publish("v1/devices/me/telemetry", attributes);
 }
 
 // Private
@@ -174,7 +172,26 @@ bool Mqtt::connectClient()
     delete clientID;
 
     return true;
+}
 
+void Mqtt::sendData(int bpm, int motion, float batteryLevel)
+{
+    String payload = "{";
+    payload += "\"bpm\":";
+    payload += String(bpm);
+    payload += ",";
+    payload += "\"motion\":";
+    payload += String(motion);
+    payload += ",";
+    payload += "\"battery\":";
+    payload += String(batteryLevel);
+    payload += "}";
+
+    const char * attributes = payload.c_str();
+
+    Serial.println(attributes);
+
+    client.publish("v1/devices/me/telemetry", attributes);
 }
 
 char * Mqtt::generateClientID()
@@ -222,14 +239,18 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         // Reply with GPIO status
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
+        //client.publish(responseTopic.c_str(), getState().c_str());
+        getState();
+        //getState();
+        //char * x =  generateClientID();
         client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     } else if (methodName.equals("setGpioStatus")) {
         // Update GPIO status and reply
+        setState(1, false);
         set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
         client.publish(responseTopic.c_str(), get_gpio_status().c_str());
     }
 }
-
 

@@ -55,7 +55,10 @@ int Motion::getAverageMovement() const
         average += reading;
     }
 
-    average = average / movements.size();
+    //average = average / movements.size();
+    if (average > 100) {
+        average = 100;
+    }
     
     movements.clear();
 

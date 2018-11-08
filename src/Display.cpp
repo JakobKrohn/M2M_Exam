@@ -69,6 +69,11 @@ void Display::enable(bool enabled)
     }
 }
 
+bool Display::isEnabled() const
+{
+    return displayEnabled;
+}
+
 void Display::clearScreen()
 {
     u8g2.clearBuffer();
@@ -162,7 +167,3 @@ void Display::addSpacing(String & str) const
     }
 }
 
-bool Display::isEnabled() const
-{
-    return displayEnabled;
-}

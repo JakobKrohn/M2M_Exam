@@ -15,6 +15,8 @@ class Display
 
         void enable(bool enabled);
 
+        bool isEnabled() const;
+
         void clearScreen();
 
         void topLineMessage(const char * message);
@@ -34,8 +36,6 @@ class Display
     private:
 
         void addSpacing(String & str) const;
-
-        bool isEnabled() const;
 
 };
 
