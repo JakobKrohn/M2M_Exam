@@ -4,6 +4,8 @@
 
 // https://github.com/tockn/MPU6050_tockn 
 
+const int READ_SIZE = 5;
+
 float currX = 0;
 float currY = 0;
 float currZ = 0;
@@ -55,12 +57,15 @@ int Motion::getAverageMovement() const
         average += reading;
     }
 
-    //average = average / movements.size();
-    if (average > 100) {
+    average /= READ_SIZE;
+
+    /*if (average > 100) {
         average = 100;
-    }
+    }*/
     
-    movements.clear();
+    //movements.clear();
+
+    //Serial.println(average);
 
     return average;
 }
@@ -119,8 +124,13 @@ void Motion::calculatePercentage()
         currentMovement = 100;
     }
 
+    //getAverageMovement();
+    //Serial.println(currentMovement);
+
+    updateReadings();
+
     // Add this reading to vector
-    movements.push_back(currentMovement);
+    //movements.push_back(currentMovement);
 
     /*Serial.print("X%: ");
     Serial.print(percentX);
@@ -128,4 +138,12 @@ void Motion::calculatePercentage()
     Serial.print(percentY);
     Serial.print("\tZ%: ");
     Serial.println(percentZ);*/
+}
+
+void Motion::updateReadings()
+{
+    if (movements.size() >= 100) {
+        movements.erase(movements.begin());
+    }
+    movements.push_back(currentMovement);
 }

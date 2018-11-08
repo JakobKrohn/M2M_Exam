@@ -23,6 +23,8 @@ class Motion
 
         void calculatePercentage();
 
+        void updateReadings();
+
 };
 
 #endif // MOTION_H

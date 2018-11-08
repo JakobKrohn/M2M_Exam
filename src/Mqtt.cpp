@@ -171,7 +171,7 @@ void Mqtt::sendData(int bpm, int motion, float batteryLevel)
 
     const char * attributes = payload.c_str();
 
-    Serial.println(attributes);
+    //Serial.println(attributes);
 
     client.publish("v1/devices/me/telemetry", attributes);
 }
