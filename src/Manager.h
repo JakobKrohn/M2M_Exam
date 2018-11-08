@@ -14,10 +14,13 @@ class Manager
         Manager(){};
         ~Manager(){};
 
+        // Initialize all components
         void initialize();
 
+        // Start tutorial
         void start();
 
+        // Update all components
         void update();
 
     private: 
@@ -32,7 +35,7 @@ class Manager
 
         void readBattery();
 
-        bool* getState(int target);
+        bool getState(int target);
 
         void setState(int target, bool enable);
 

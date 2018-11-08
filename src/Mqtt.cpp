@@ -24,35 +24,9 @@ unsigned long lastSend = 0;
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-boolean gpioState[] = {false, false};
+//boolean gpioState[] = {false, false};
 
-String get_gpio_status() {
-  // Prepare gpios JSON payload string
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data[String(0)] = gpioState[0] ? true : false;
-  data[String(2)] = gpioState[1] ? true : false;
-  char payload[256];
-  data.printTo(payload, sizeof(payload));
-  String strPayload = String(payload);
-  Serial.print("Get gpio status: ");
-  Serial.println(strPayload);
-  return strPayload;
-}
 
-void set_gpio_status(int pin, boolean enabled) {
-  if (pin == 0) {
-    // Output GPIOs state
-    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[0] = enabled;
-  } else if (pin == 2) {
-    // Output GPIOs state
-    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[1] = enabled;
-  }
-}
 
 bool Mqtt::initialize()
 {
@@ -74,7 +48,7 @@ void Mqtt::setCallback(std::function<void(int, bool)> callback)
     setStateAA = callback;
 }
 
-void Mqtt::setCallback(std::function<bool*(int)> callback)
+void Mqtt::setCallback(std::function<bool(int)> callback)
 {
     getStateAA = callback;
 }
@@ -155,7 +129,7 @@ bool Mqtt::connectClient()
             Serial.println("Client connected");
             client.subscribe("v1/devices/me/rpc/request/+");
             Serial.println("Sending current GPIO status ...");
-            client.publish("v1/devices/me/attributes", get_gpio_status().c_str());
+            client.publish("v1/devices/me/attributes", getStateString().c_str());
             break;
         }
         else {
@@ -244,31 +218,99 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
     String methodName = String((const char*)data["method"]);
 
     if (methodName.equals("getGpioStatus")) {
+
         // Reply with GPIO status
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
-        //client.publish(responseTopic.c_str(), getState().c_str());
         
-        auto x = getStateAA(0);
-        Serial.println("Values fetched from manager in Mqtt: ");
-        if (*(x+0)) {
-            Serial.println("0 is true");
-        } 
-        if (*(x+1)) {
-            Serial.println("1 is true");
-        }
-        Serial.println("Done");
-        //getState();
+        //auto responsePayload = getStateString();
 
-        //getState();
-        //char * x =  generateClientID();
-        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-    } else if (methodName.equals("setGpioStatus")) {
+        client.publish(responseTopic.c_str(), getStateString().c_str());
+
+    } 
+    else if (methodName.equals("setGpioStatus")) {
+
         // Update GPIO status and reply
-        
-        setStateAA(1, false);
-        auto x = getStateAA(0);
-        Serial.println("Values fetched from manager in Mqtt: ");
+        setStateAA(data["params"]["pin"], data["params"]["enabled"]);
+
+        //auto responsePayload = getStateString();
+
+        //set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
+        String responseTopic = String(topic);
+        responseTopic.replace("request", "response");
+        client.publish(responseTopic.c_str(), getStateString().c_str());
+    }
+}/* void set_gpio_status(int pin, boolean enabled) {
+  if (pin == 0) {
+    // Output GPIOs state
+    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[0] = enabled;
+  } else if (pin == 2) {
+    // Output GPIOs state
+    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
+    // Update GPIOs state
+    gpioState[1] = enabled;
+  }
+}*/
+
+String Mqtt::getStateString() const
+{
+    //auto states = getStateAA();
+
+    bool rec = getStateAA(0);
+    bool dis = getStateAA(1);
+
+    StaticJsonBuffer<200> jsonBuffer;
+    JsonObject& data = jsonBuffer.createObject();
+
+    /*if (*(states + 0)) {
+        Serial.println("0 is true");
+        data[String(0)] = true;
+    } 
+    else {
+        Serial.println("0 is false");
+        data[String(0)] = false;
+    }
+    if (*(states + 1)) {
+        Serial.println("1 is true");
+        data[String(1)] = true;
+    }
+    else {
+        Serial.println("1 is false");
+        data[String(1)] = false;
+    }*/
+
+    data[String(0)] = rec ? true : false;
+    data[String(1)] = dis ? true : false;
+
+    char payload[256];
+    data.printTo(payload, sizeof(payload));
+
+    String strPayload = String(payload);
+
+    Serial.print("Get gpio status: ");
+    Serial.println(strPayload);
+
+    return strPayload;
+}
+/*
+String get_gpio_status() {
+  // Prepare gpios JSON payload string
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& data = jsonBuffer.createObject();
+  data[String(0)] = gpioState[0] ? true : false;
+  data[String(2)] = gpioState[1] ? true : false;
+  char payload[256];
+  data.printTo(payload, sizeof(payload));
+  String strPayload = String(payload);
+  Serial.print("Get gpio status: ");
+  Serial.println(strPayload);
+  return strPayload;
+}*/
+
+/*
+Serial.println("Values fetched from manager in Mqtt: ");
         if (*(x+0)) {
             Serial.println("0 is true");
         } 
@@ -277,28 +319,4 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         }
         //Serial.println(x);
         
-        Serial.println("Done");
-        //setState(1, false);
-        
-        set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
-        String responseTopic = String(topic);
-        responseTopic.replace("request", "response");
-        client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-    }
-}
-
-/*bool * Mqtt::getState()
-{
-
-    //bool gpioState[] = {recording, _display.isEnabled()};
-    static bool gpioState[] = {false, false};
-
-    Serial.println("Get state from MQTT");
-
-    return gpioState;
-}
-
-void Mqtt::setState(int target, bool enabled)
-{
-    Serial.println("Set state from MQTT");
-}*/
+*/

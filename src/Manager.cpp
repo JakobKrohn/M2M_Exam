@@ -5,7 +5,9 @@
 const int BATTERY_PIN = A0;
 const long TUTORIAL_TIME = 50000;
 
-float batteryLevel = 0;
+bool _recording = false;
+
+float _batteryLevel = 0;
 
 void Manager::initialize()
 {
@@ -29,19 +31,14 @@ void Manager::initialize()
     // Initialize mqtt
     _display.bottomLineMessage("Init mqtt");
     _mqtt.initialize();
-    _mqtt.update(0, 0, 0);
 
     // Set callback for setState
     _mqtt.setCallback([this] (int target, bool enabled) { this->setState(target, enabled); });
 
     // Set callback for getState
-    _mqtt.setCallback([this] (int target) -> bool* { return this->getState(target); });
+    _mqtt.setCallback([this] (int target) -> bool { return this->getState(target); });
 
-    //_mqtt.setCallback(setState);
-    
-    //_mqtt.setCallback(getState);
-
-    //_mqtt.setCallback(this, &Manager::getState);
+    _mqtt.update(0, 0, 0);
 }
 
 void Manager::start()
@@ -78,7 +75,8 @@ void Manager::start()
     // display.enable(false, time to turn off);
 
     _display.clearScreen();
-    _display.enable(false);
+    _display.setupAngleAndMovement();
+    //_display.enable(false);
 }
 
 void Manager::update()
@@ -95,7 +93,7 @@ void Manager::update()
     _mqtt.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
-        batteryLevel);
+        _batteryLevel);
 
     _display.bpm(String(_pulse.getCurrentBpm()));
     _display.motion(_motion.getMovementString());
@@ -106,20 +104,81 @@ void Manager::update()
 void Manager::readBattery()
 {
     unsigned int raw = analogRead(BATTERY_PIN);
-    batteryLevel = (raw / 1023.0) * 4.2;
+    _batteryLevel = (raw / 1023.0) * 4.2;
 }
 
-bool* Manager::getState(int target)
+bool Manager::getState(int target)
 {
-    //bool gpioState[] = {recording, _display.isEnabled()};
-    static bool gpioState[] = {true, true};
+    //static bool gpioState[] = {_recording, this->_display.isEnabled()};
+    Serial.println("\nGet state from MANAGER");
 
-    Serial.println("Get state from MANAGER");
+    switch (target) {
+        case 0:
+            Serial.print("Recording is: ");
+            if (_recording) { 
+                Serial.println("Enabled"); 
+                return true;
+            }
+            else { 
+                Serial.println("Disabled"); 
+                return false;
+            }
+            break;
+        case 1:
+            Serial.print("Display is: ");
+            if (_display.isEnabled()) {
+                Serial.println("Enabled");
+                return true;
+            }
+            else {
+                Serial.println("Disabled");
+                return false;
+            }
+            break;
+        case 2:
+            break;
+        default:
+            break;
+    }
 
-    return gpioState;
+    Serial.println("ERROR: get state");
+    return false;
+
+    //return gpioState;
 }
 
 void Manager::setState(int target, bool enabled)
 {
-    Serial.println("Set state from MANAGER");
+    Serial.println("\nSet state from MANAGER");
+    Serial.print("Address of recording: ");
+    Serial.println(*(&_recording));
+    switch (target) {
+        case 0:
+            // Set recording
+            Serial.print("Setting recording: ");
+            if (enabled) { Serial.println("True"); }
+            else { Serial.println("False"); }
+            _recording = enabled;
+            if (_recording) { Serial.println("Recording is now enabled"); }
+            else { Serial.println("Recording is now disabled"); }
+            break;
+        case 1:
+            // Set display
+            Serial.print("Display was: ");
+            if (_display.isEnabled()) { Serial.println("True"); }
+            else { Serial.println("False"); }
+            Serial.print("Setting display: ");
+            if (enabled) { Serial.println("True"); }
+            else { Serial.println("False"); }
+            _display.enable(enabled);
+            this->_display.enable(enabled);
+            break;
+        case 2: 
+            // Not implemented
+            Serial.println("Not implemented");
+            break;
+        default: 
+            Serial.println("Not implemented");
+            break;
+    }
 }
