@@ -1,0 +1,8 @@
+#ifndef DEVICE_CREDENTIALS_H
+#define DEVICE_CREDENTIALS_H
+
+#define DEVICE_ID "A001"
+
+#define DEVICE_TOKEN "vSiGoEgh9NprdCyGRmor"
+
+#endif // DECIDE_CREDENTIALS

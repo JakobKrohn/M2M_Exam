@@ -13,6 +13,10 @@ class Display
 
         void update();
 
+        void enableName(bool enabled);
+
+        bool isNameEnabled() const;
+
         void enable(bool enabled);
 
         bool isEnabled() const;

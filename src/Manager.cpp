@@ -52,7 +52,7 @@ void Manager::start()
     _display.topLineMessage("Set finger on");
     _display.bottomLineMessage("the red light");
 
-    /*while (!_pulse.update()) {
+    while (!_pulse.update()) {
         // TODO go to sleep after some time here
         yield();
         // ESP.deepSleep(0);
@@ -64,7 +64,7 @@ void Manager::start()
     while (millis() - start < TUTORIAL_TIME) {
         yield();
         update();
-    }*/
+    }
 
     _display.clearScreen();
     _display.topLineMessage("Sit back");
@@ -109,31 +109,12 @@ void Manager::readBattery()
 
 bool Manager::getState(int target)
 {
-    //static bool gpioState[] = {_recording, this->_display.isEnabled()};
-    Serial.println("\nGet state from MANAGER");
-
     switch (target) {
         case 0:
-            Serial.print("Recording is: ");
-            if (_recording) { 
-                Serial.println("Enabled"); 
-                return true;
-            }
-            else { 
-                Serial.println("Disabled"); 
-                return false;
-            }
+            return _display.isNameEnabled();
             break;
         case 1:
-            Serial.print("Display is: ");
-            if (_display.isEnabled()) {
-                Serial.println("Enabled");
-                return true;
-            }
-            else {
-                Serial.println("Disabled");
-                return false;
-            }
+            return _display.isEnabled();
             break;
         case 2:
             break;
@@ -143,8 +124,6 @@ bool Manager::getState(int target)
 
     Serial.println("ERROR: get state");
     return false;
-
-    //return gpioState;
 }
 
 void Manager::setState(int target, bool enabled)
@@ -154,24 +133,12 @@ void Manager::setState(int target, bool enabled)
     Serial.println(*(&_recording));
     switch (target) {
         case 0:
-            // Set recording
-            Serial.print("Setting recording: ");
-            if (enabled) { Serial.println("True"); }
-            else { Serial.println("False"); }
-            _recording = enabled;
-            if (_recording) { Serial.println("Recording is now enabled"); }
-            else { Serial.println("Recording is now disabled"); }
+            // Display name
+            _display.enableName(enabled);
             break;
         case 1:
             // Set display
-            Serial.print("Display was: ");
-            if (_display.isEnabled()) { Serial.println("True"); }
-            else { Serial.println("False"); }
-            Serial.print("Setting display: ");
-            if (enabled) { Serial.println("True"); }
-            else { Serial.println("False"); }
             _display.enable(enabled);
-            this->_display.enable(enabled);
             break;
         case 2: 
             // Not implemented

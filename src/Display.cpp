@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Display.h"
+#include "DeviceCredentials.h"
 #include <U8g2lib.h>
 
 // https://github.com/olikraus/u8g2
@@ -13,8 +14,10 @@ unsigned long beatShownMillis = 0;
 
 String displayedBpm, displayedMotion = "";
 
-unsigned int enableTime = 0; 
+// unsigned int enableTime = 0; 
+bool shouldUpdate = true;
 bool displayEnabled = true;
+bool nameEnabled = false;
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
@@ -34,7 +37,7 @@ void Display::initialize()
 
 void Display::update()
 {
-    if (!isEnabled()) { return; }
+    if (!shouldUpdate) { return; }
 
     unsigned long currentMillis = millis();
 
@@ -45,11 +48,34 @@ void Display::update()
         u8g2.sendBuffer();
         beatShownMillis = currentMillis;
     }
+}
 
-    // Manage enabling
-    if (currentMillis - enableTime >= enableInterval) {
-        // enable(false);
+void Display::enableName(bool enabled)
+{
+    if (nameEnabled == enabled) {
+        return;
     }
+
+    nameEnabled = enabled;
+
+    if (nameEnabled) {
+        shouldUpdate = false;
+        clearScreen();
+        u8g2.setFont(u8g2_font_inb30_mf);
+        u8g2.drawStr(0, BOTTOM_Y, DEVICE_ID);
+        u8g2.sendBuffer();
+        // Show name
+    }
+    else {
+        shouldUpdate = true;
+        clearScreen();
+        setupAngleAndMovement();
+    }
+}
+
+bool Display::isNameEnabled() const
+{
+    return nameEnabled;
 }
 
 void Display::enable(bool enabled)
@@ -61,10 +87,20 @@ void Display::enable(bool enabled)
     displayEnabled = enabled;
 
     if (displayEnabled) {
+        if (nameEnabled) {
+            shouldUpdate = false;
+            clearScreen();
+            u8g2.setFont(u8g2_font_inb30_mf);
+            u8g2.drawStr(0, BOTTOM_Y, DEVICE_ID);
+            u8g2.sendBuffer();
+        } else {
+            shouldUpdate = true;
+            setupAngleAndMovement();
+        }
         u8g2.setPowerSave(0);
-        enableTime = millis();
     }
     else {
+        shouldUpdate = false;
         u8g2.setPowerSave(1);
     }
 }
@@ -97,8 +133,9 @@ void Display::bottomLineMessage(const char * msg)
 
 void Display::setupAngleAndMovement()
 {
-    if (!isEnabled()) { return; }
+    if (!shouldUpdate) { return; }
 
+    u8g2.setFont(u8g2_font_9x15_mf);
     u8g2.clearBuffer();
     u8g2.drawStr(0, TOP_Y, "Pulse: ");
     u8g2.drawStr(0, BOTTOM_Y, "Motion: ");
@@ -106,7 +143,7 @@ void Display::setupAngleAndMovement()
 
 void Display::singleMessage(const char * message)
 {
-    if (!isEnabled()) { return; }
+    if (!shouldUpdate) { return; }
 
     u8g2.clearBuffer();
     u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, message);
@@ -115,7 +152,7 @@ void Display::singleMessage(const char * message)
 
 void Display::motion(String motion)
 {
-    if (displayedMotion.equals(motion) || !isEnabled()) {
+    if (displayedMotion.equals(motion) || !shouldUpdate) {
         return;
     }
 
@@ -130,7 +167,7 @@ void Display::motion(String motion)
 
 void Display::bpm(String bpm)
 {
-    if (displayedBpm.equals(bpm) || !isEnabled()) {
+    if (displayedBpm.equals(bpm) || !shouldUpdate) {
         return;
     }
 
@@ -145,7 +182,7 @@ void Display::bpm(String bpm)
 
 void Display::beat()
 {
-    if (!isEnabled()) { return; }
+    if (!shouldUpdate) { return; }
 
     // Font used: 
     // https://github.com/olikraus/u8g2/wiki/fntgrpx11

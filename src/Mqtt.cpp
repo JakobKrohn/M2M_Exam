@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "Mqtt.h"
+#include "DeviceCredentials.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -16,7 +17,7 @@ const char * PASSWORD = "244466666";
 
 // THINGSBOARD CREDENTIALS
 const char * SERVER = "cloud.thingsboard.io";
-const char * TOKEN = "vSiGoEgh9NprdCyGRmor";
+//const char * TOKEN = "vSiGoEgh9NprdCyGRmor";
 const int PORT = 1883;
 
 unsigned long lastSend = 0;
@@ -24,20 +25,13 @@ unsigned long lastSend = 0;
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-//boolean gpioState[] = {false, false};
-
-
-
 bool Mqtt::initialize()
 {
-    // #define MQTT_CALLBACK_SIGNATURE std::function<void(char*, uint8_t*, unsigned int)> callback
-
     WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
         client.setServer(SERVER, PORT);
         // https://github.com/knolleary/pubsubclient/issues/115
         client.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->onMessage(topic, payload, length); });
-        //client.setCallback(onMessage);
     }
 
     return false;
@@ -52,18 +46,6 @@ void Mqtt::setCallback(std::function<bool(int)> callback)
 {
     getStateAA = callback;
 }
-
-/*void Mqtt::setCallback( void setStateCallback(int target, bool enabled) )
-{
-    setState = setStateCallback;
-}*/
-
-// void Mqtt::setCallback( bool * getStateCallback() )
-//template<class T> void Mqtt::setCallback( T* const object, void(T::* const mf)(int, bool) )
-/*template<class T> void Mqtt::setCallback( T* const object, bool*(T::* const mf)() )
-{
-    //getState = getStateCallback;
-}*/
 
 void Mqtt::update(int bpm, int motion, float batteryLevel)
 {
@@ -125,7 +107,7 @@ bool Mqtt::connectClient()
     while (!client.connected()) {
         Serial.println("Connecting mqtt client");
 
-        if (client.connect(clientID, TOKEN, NULL)) {
+        if (client.connect(clientID, DEVICE_TOKEN, NULL)) {
             Serial.println("Client connected");
             client.subscribe("v1/devices/me/rpc/request/+");
             Serial.println("Sending current GPIO status ...");
@@ -223,8 +205,6 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
         
-        //auto responsePayload = getStateString();
-
         client.publish(responseTopic.c_str(), getStateString().c_str());
 
     } 
@@ -233,26 +213,12 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
         // Update GPIO status and reply
         setStateAA(data["params"]["pin"], data["params"]["enabled"]);
 
-        //auto responsePayload = getStateString();
-
         //set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
         String responseTopic = String(topic);
         responseTopic.replace("request", "response");
         client.publish(responseTopic.c_str(), getStateString().c_str());
     }
-}/* void set_gpio_status(int pin, boolean enabled) {
-  if (pin == 0) {
-    // Output GPIOs state
-    //digitalWrite(GPIO0, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[0] = enabled;
-  } else if (pin == 2) {
-    // Output GPIOs state
-    //digitalWrite(GPIO2, enabled ? HIGH : LOW);
-    // Update GPIOs state
-    gpioState[1] = enabled;
-  }
-}*/
+}
 
 String Mqtt::getStateString() const
 {
@@ -263,23 +229,6 @@ String Mqtt::getStateString() const
 
     StaticJsonBuffer<200> jsonBuffer;
     JsonObject& data = jsonBuffer.createObject();
-
-    /*if (*(states + 0)) {
-        Serial.println("0 is true");
-        data[String(0)] = true;
-    } 
-    else {
-        Serial.println("0 is false");
-        data[String(0)] = false;
-    }
-    if (*(states + 1)) {
-        Serial.println("1 is true");
-        data[String(1)] = true;
-    }
-    else {
-        Serial.println("1 is false");
-        data[String(1)] = false;
-    }*/
 
     data[String(0)] = rec ? true : false;
     data[String(1)] = dis ? true : false;
@@ -294,29 +243,3 @@ String Mqtt::getStateString() const
 
     return strPayload;
 }
-/*
-String get_gpio_status() {
-  // Prepare gpios JSON payload string
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data[String(0)] = gpioState[0] ? true : false;
-  data[String(2)] = gpioState[1] ? true : false;
-  char payload[256];
-  data.printTo(payload, sizeof(payload));
-  String strPayload = String(payload);
-  Serial.print("Get gpio status: ");
-  Serial.println(strPayload);
-  return strPayload;
-}*/
-
-/*
-Serial.println("Values fetched from manager in Mqtt: ");
-        if (*(x+0)) {
-            Serial.println("0 is true");
-        } 
-        if (*(x+1)) {
-            Serial.println("1 is true");
-        }
-        //Serial.println(x);
-        
-*/
