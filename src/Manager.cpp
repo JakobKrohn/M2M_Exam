@@ -71,7 +71,7 @@ void Manager::start()
     _display.bottomLineMessage("and enjoy!");
 
     // Can't delay here!
-    delay(5000);
+    //delay(5000);
     // display.enable(false, time to turn off);
 
     _display.clearScreen();
@@ -90,13 +90,13 @@ void Manager::update()
         _display.beat();
     }
 
+    _display.bpm(String(_pulse.getCurrentBpm()));
+    _display.motion(_motion.getMovementString());
+
     _mqtt.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
         _batteryLevel);
-
-    _display.bpm(String(_pulse.getCurrentBpm()));
-    _display.motion(_motion.getMovementString());
 }
 
 // Private

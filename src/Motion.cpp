@@ -4,7 +4,7 @@
 
 // https://github.com/tockn/MPU6050_tockn 
 
-const int READ_SIZE = 5;
+const int READ_SIZE = 10;
 
 float currX = 0;
 float currY = 0;
@@ -30,7 +30,6 @@ void Motion::initialize()
     Serial.print("\nMotion initializing ... ");
 
     mpu6050.begin();
-    mpu6050.calcGyroOffsets(true);
 
     Serial.println("done");
 }
@@ -57,15 +56,7 @@ int Motion::getAverageMovement() const
         average += reading;
     }
 
-    average /= READ_SIZE;
-
-    /*if (average > 100) {
-        average = 100;
-    }*/
-    
-    //movements.clear();
-
-    //Serial.println(average);
+    average /= 10;
 
     return average;
 }
@@ -77,13 +68,15 @@ int Motion::getCurrentMovement() const
 
 String Motion::getMovementString() const
 {
-    if (currentMovement > 90) {
+    auto movement = getAverageMovement();
+
+    if (movement > 40) {
         return "-----";
-    } else if (currentMovement > 50) {
+    } else if (movement > 30) {
         return "----";
-    } else if (currentMovement > 10) {
+    } else if (movement > 20) {
         return "---";
-    } else if (currentMovement > 1) {
+    } else if (movement > 10) {
         return "--";
     } else {
         return "-";
@@ -120,30 +113,24 @@ void Motion::calculatePercentage()
 
     // Calculate current movement
     currentMovement = percentX + percentY + percentZ;
-    if (currentMovement > 100) {
-        currentMovement = 100;
-    }
-
-    //getAverageMovement();
-    //Serial.println(currentMovement);
 
     updateReadings();
-
-    // Add this reading to vector
-    //movements.push_back(currentMovement);
 
     /*Serial.print("X%: ");
     Serial.print(percentX);
     Serial.print("\tY%: ");
     Serial.print(percentY);
     Serial.print("\tZ%: ");
-    Serial.println(percentZ);*/
+    Serial.print(percentZ);
+    Serial.print("\tAvg: ");
+    Serial.println(getAverageMovement());*/
 }
 
 void Motion::updateReadings()
 {
-    if (movements.size() >= 100) {
+    if (movements.size() >= READ_SIZE) {
         movements.erase(movements.begin());
     }
+
     movements.push_back(currentMovement);
 }
