@@ -19,7 +19,7 @@ class Manager
 
         // Start tutorial and wait until user 
         //  places finger on pulse sensor
-        void start();
+        void tutorial();
 
         // Update all components
         void update();
@@ -33,6 +33,15 @@ class Manager
         Pulse _pulse;
 
         Mqtt _mqtt;
+
+        // Keep connection with thingsboard
+        //  send faulty data, while waiting for user 
+        //  to accomplish something. 
+        void bareUpdate(int time, bool help);
+
+        void bareUpdate(bool help);
+
+        void waitForPulse();
 
         void readBattery();
 

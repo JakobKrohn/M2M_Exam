@@ -6,7 +6,7 @@ Manager manager;
 void setup() {
 
   manager.initialize();
-  manager.start();
+  manager.tutorial();
 
 }
 

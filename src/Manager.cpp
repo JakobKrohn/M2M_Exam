@@ -3,7 +3,7 @@
 #include <Wire.h>
 
 const int BATTERY_PIN = A0;
-const long TUTORIAL_TIME = 50000;
+const long TUTORIAL_TIME = 10000;
 
 bool _recording = false;
 
@@ -28,8 +28,6 @@ void Manager::initialize()
         _display.topLineMessage("Failed at");
         _display.bottomLineMessage("pulse sensor");
         while (true) { yield(); }
-        //ESP.deepSleep(0);
-        Serial.println("After sleep");
     }
 
     // Initialize motion sensor
@@ -54,21 +52,29 @@ void Manager::initialize()
     _mqtt.update(0, 0, 0, true);
 }
 
-void Manager::start()
+void Manager::tutorial()
 {
     // Greet user
     _display.clearScreen();
     _display.topLineMessage("Welcome!");
-    delay(2000);
+
+    // Display welcome message for 2 seconds
+    bareUpdate(2000, false);
+
+    // Explain how to use motion sensor
+    _display.topLineMessage("Place the unit ");
+    _display.bottomLineMessage("on your leg");
+
+    bareUpdate(6000, false);
 
     // Explain how to use pulse sensor
-    _display.topLineMessage("Set finger on");
-    _display.bottomLineMessage("the red light");
+    _display.clearScreen();
+    _display.topLineMessage("Strap finger ");
+    _display.bottomLineMessage("on red light");
 
+    // Wait until user places finger on motion sensor
     while (!_pulse.update()) {
-        readBattery();
-        _mqtt.update(-1, -1, _batteryLevel, true);
-        yield();
+        bareUpdate(true);
     }
 
     // Show pulse and motion for some time
@@ -79,17 +85,20 @@ void Manager::start()
         update();
     }
 
-    /*_display.clearScreen();
+    // Kudos to user
+    _display.clearScreen();
+    _display.topLineMessage("Good job!");
+
+    bareUpdate(4000, false);
+
+    _display.clearScreen();
     _display.topLineMessage("Sit back");
     _display.bottomLineMessage("and enjoy!");
 
-    // Can't delay here!
-    delay(5000);
-    // display.enable(false, time to turn off);
+    bareUpdate(2000, false);
 
     _display.clearScreen();
     _display.setupAngleAndMovement();
-    //_display.enable(false);*/
 }
 
 void Manager::update()
@@ -103,6 +112,17 @@ void Manager::update()
         _display.beat();
     }
 
+    bool flag = false;
+
+    auto bpm = _pulse.getCurrentBpm();
+
+    // Check if the pulse is measuring correct
+    if (bpm < 30 || bpm > 200) {
+        flag = true;
+        // Source for high/low heartrate: 
+        // https://www.topendsports.com/testing/records/heart-rate.htm
+    }
+
     _display.bpm(String(_pulse.getCurrentBpm()));
     _display.motion(_motion.getMovementString());
 
@@ -110,10 +130,34 @@ void Manager::update()
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
         _batteryLevel, 
-        false);
+        flag);
 }
 
 // Private
+
+void Manager::bareUpdate(int time, bool help) {
+    auto start = millis();
+    while (millis() - start < 2000) {
+        readBattery();
+        _mqtt.update(
+            _pulse.getCurrentBpm(), 
+            _motion.getAverageMovement(), 
+            _batteryLevel, 
+            help);
+        yield();
+    }
+}
+
+void Manager::bareUpdate(bool help)
+{
+    readBattery();
+    _mqtt.update(
+        _pulse.getCurrentBpm(), 
+        _motion.getAverageMovement(), 
+        _batteryLevel, 
+        help);
+    yield();
+}
 
 void Manager::readBattery()
 {
@@ -136,15 +180,11 @@ bool Manager::getState(int target)
             break;
     }
 
-    Serial.println("ERROR: get state");
     return false;
 }
 
 void Manager::setState(int target, bool enabled)
 {
-    Serial.println("\nSet state from MANAGER");
-    Serial.print("Address of recording: ");
-    Serial.println(*(&_recording));
     switch (target) {
         case 0:
             // Display
