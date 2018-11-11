@@ -5,19 +5,32 @@
 
 // https://github.com/olikraus/u8g2
 
+// Highest part of screen for writing
 const int TOP_Y = 10;
-const int BOTTOM_Y = 29;
-const long heartBeatInterval = 200;
-const long enableInterval = 50000;
 
+// Lowest part of screen for writing
+const int BOTTOM_Y = 29;
+
+// How long beating hear i shown
+const unsigned long HEART_BEAT_INTERVAL = 200;
+
+// How long has beating heart been shown
 unsigned long beatShownMillis = 0;
 
+// Hold last displayed pulse and motion values
+//  no need to print these again if they are matching
 String displayedBpm, displayedMotion = "";
 
+// Should the display be updated
 bool shouldUpdate = true;
+
+// Is display enabled
 bool displayEnabled = true;
+
+// Is name shown
 bool nameEnabled = false;
 
+// Library object
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 void Display::initialize()
@@ -38,15 +51,7 @@ void Display::update()
 {
     if (!shouldUpdate) { return; }
 
-    unsigned long currentMillis = millis();
-
-    // Manage beat
-    if (currentMillis - beatShownMillis >= heartBeatInterval) {
-        u8g2.setFont(u8g2_font_cursor_tf);
-        u8g2.drawGlyph(114, 8, 0136);
-        u8g2.sendBuffer();
-        beatShownMillis = currentMillis;
-    }
+    manageBeatingHeart();
 }
 
 void Display::enableName(bool enabled)
@@ -59,11 +64,7 @@ void Display::enableName(bool enabled)
 
     if (nameEnabled) {
         shouldUpdate = false;
-        clearScreen();
-        u8g2.setFont(u8g2_font_inb30_mf);
-        u8g2.drawStr(0, BOTTOM_Y, DEVICE_ID);
-        u8g2.sendBuffer();
-        // Show name
+        showName();
     }
     else {
         shouldUpdate = true;
@@ -88,10 +89,7 @@ void Display::enable(bool enabled)
     if (displayEnabled) {
         if (nameEnabled) {
             shouldUpdate = false;
-            clearScreen();
-            u8g2.setFont(u8g2_font_inb30_mf);
-            u8g2.drawStr(0, BOTTOM_Y, DEVICE_ID);
-            u8g2.sendBuffer();
+            showName();
         } else {
             shouldUpdate = true;
             setupAngleAndMovement();
@@ -183,6 +181,28 @@ void Display::beat()
 }
 
 // Private
+
+void Display::manageBeatingHeart()
+{
+    unsigned long currentMillis = millis();
+
+    // If beating heart has been displayed for a time, reset
+    //  to empty heart. 
+    if (currentMillis - beatShownMillis >= HEART_BEAT_INTERVAL) {
+        u8g2.setFont(u8g2_font_cursor_tf);
+        u8g2.drawGlyph(114, 8, 0136);
+        u8g2.sendBuffer();
+        beatShownMillis = currentMillis;
+    }
+}
+
+void Display::showName()
+{
+    clearScreen();
+    u8g2.setFont(u8g2_font_inb30_mf);
+    u8g2.drawStr(0, BOTTOM_Y, DEVICE_ID);
+    u8g2.sendBuffer();
+}
 
 void Display::addSpacing(String & str) const
 {

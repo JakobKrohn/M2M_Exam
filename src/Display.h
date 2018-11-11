@@ -59,6 +59,10 @@ class Display
 
     private:
 
+        void manageBeatingHeart();
+
+        void showName();
+
         // Add spacing to string
         //  so previous string isn't showed
         void addSpacing(String & str) const;

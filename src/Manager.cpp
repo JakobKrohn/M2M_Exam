@@ -79,7 +79,7 @@ void Manager::start()
         update();
     }
 
-    _display.clearScreen();
+    /*_display.clearScreen();
     _display.topLineMessage("Sit back");
     _display.bottomLineMessage("and enjoy!");
 
@@ -89,7 +89,7 @@ void Manager::start()
 
     _display.clearScreen();
     _display.setupAngleAndMovement();
-    //_display.enable(false);
+    //_display.enable(false);*/
 }
 
 void Manager::update()

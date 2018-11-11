@@ -17,7 +17,8 @@ class Manager
         // Initialize all components
         void initialize();
 
-        // Start tutorial
+        // Start tutorial and wait until user 
+        //  places finger on pulse sensor
         void start();
 
         // Update all components
