@@ -40,7 +40,6 @@ void Manager::initialize()
         _display.topLineMessage("Failed at");
         _display.bottomLineMessage("wifi/mqtt");
         while (true) { yield(); }
-        //ESP.deepSleep(0);
     }
 
     // Set callback for setState
@@ -49,6 +48,7 @@ void Manager::initialize()
     // Set callback for getState
     _mqtt.setCallback([this] (int target) -> bool { return this->getState(target); });
 
+    // Create a connection to thingsboard with fake data
     _mqtt.update(0, 0, 0, true);
 }
 
@@ -67,23 +67,7 @@ void Manager::tutorial()
 
     bareUpdate(6000, false);
 
-    // Explain how to use pulse sensor
-    _display.clearScreen();
-    _display.topLineMessage("Strap finger ");
-    _display.bottomLineMessage("on red light");
-
-    // Wait until user places finger on motion sensor
-    while (!_pulse.update()) {
-        bareUpdate(true);
-    }
-
-    // Show pulse and motion for some time
-    _display.setupAngleAndMovement();
-    auto start = millis();
-    while (millis() - start < TUTORIAL_TIME) {
-        yield();
-        update();
-    }
+    waitForPulse();
 
     // Kudos to user
     _display.clearScreen();
@@ -98,7 +82,7 @@ void Manager::tutorial()
     bareUpdate(2000, false);
 
     _display.clearScreen();
-    _display.setupAngleAndMovement();
+    _display.pulseAndMovement();
 }
 
 void Manager::update()
@@ -112,17 +96,6 @@ void Manager::update()
         _display.beat();
     }
 
-    bool flag = false;
-
-    auto bpm = _pulse.getCurrentBpm();
-
-    // Check if the pulse is measuring correct
-    if (bpm < 30 || bpm > 200) {
-        flag = true;
-        // Source for high/low heartrate: 
-        // https://www.topendsports.com/testing/records/heart-rate.htm
-    }
-
     _display.bpm(String(_pulse.getCurrentBpm()));
     _display.motion(_motion.getMovementString());
 
@@ -130,15 +103,41 @@ void Manager::update()
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
         _batteryLevel, 
-        flag);
+        !_pulse.isValid());
 }
 
 // Private
+
+void Manager::waitForPulse()
+{
+    // Explain how to use pulse sensor
+    _display.clearScreen();
+    _display.topLineMessage("Strap finger ");
+    _display.bottomLineMessage("on red light");
+
+    // Wait until user places finger on motion sensor
+    while (!_pulse.update()) {
+        bareUpdate(true);
+    }
+
+    // Show pulse and motion for some time
+    _display.pulseAndMovement();
+    auto start = millis();
+    while (millis() - start < TUTORIAL_TIME) {
+        yield();
+        update();
+        if (!_pulse.isValid()) {
+            waitForPulse();
+        }
+    }
+}
 
 void Manager::bareUpdate(int time, bool help) {
     auto start = millis();
     while (millis() - start < 2000) {
         readBattery();
+        _pulse.update();
+        _motion.update();
         _mqtt.update(
             _pulse.getCurrentBpm(), 
             _motion.getAverageMovement(), 
@@ -151,6 +150,8 @@ void Manager::bareUpdate(int time, bool help) {
 void Manager::bareUpdate(bool help)
 {
     readBattery();
+    _pulse.update();
+    _motion.update();
     _mqtt.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 

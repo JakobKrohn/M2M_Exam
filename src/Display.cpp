@@ -69,7 +69,7 @@ void Display::enableName(bool enabled)
     else {
         shouldUpdate = true;
         clearScreen();
-        setupAngleAndMovement();
+        pulseAndMovement();
     }
 }
 
@@ -92,7 +92,7 @@ void Display::enable(bool enabled)
             showName();
         } else {
             shouldUpdate = true;
-            setupAngleAndMovement();
+            pulseAndMovement();
         }
         u8g2.setPowerSave(0);
     }
@@ -115,7 +115,7 @@ void Display::clearScreen()
 void Display::topLineMessage(const char * msg)
 {
     u8g2.setFont(u8g2_font_9x15_mf);
-    u8g2.drawStr(0, BOTTOM_Y, "             ");
+    u8g2.drawStr(0, BOTTOM_Y, "              ");
     u8g2.drawStr(0, TOP_Y, msg);
     u8g2.sendBuffer();
 }
@@ -123,12 +123,12 @@ void Display::topLineMessage(const char * msg)
 void Display::bottomLineMessage(const char * msg)
 {
     u8g2.setFont(u8g2_font_9x15_mf);
-    u8g2.drawStr(0, BOTTOM_Y, "             ");
+    u8g2.drawStr(0, BOTTOM_Y, "              ");
     u8g2.drawStr(0, BOTTOM_Y, msg);
     u8g2.sendBuffer();
 }
 
-void Display::setupAngleAndMovement()
+void Display::pulseAndMovement()
 {
     if (!shouldUpdate) { return; }
 

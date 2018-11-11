@@ -59,6 +59,17 @@ int Pulse::getCurrentBpm() const
     return currentBpm;
 }
 
+bool Pulse::isValid() const
+{
+    long irValue = sensor.getIR();
+
+    if (irValue < 50000) {
+        return false;
+    }
+
+    return true;
+}
+
 // Private
 
 void Pulse::calculateCurrentBpm(int timeSinceLastBeat)

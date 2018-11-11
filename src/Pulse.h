@@ -16,6 +16,8 @@ class Pulse
 
         int getCurrentBpm() const;
 
+        bool isValid() const;
+
     private:
 
         void calculateCurrentBpm(int timeSinceLastBeat);

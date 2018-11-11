@@ -45,7 +45,7 @@ class Display
 
         // Sets up pulse and movement format. 
         // Call this before printing pulse/movement/hearbeat
-        void setupAngleAndMovement();
+        void pulseAndMovement();
 
         // Display current movement
         void motion(String motion);

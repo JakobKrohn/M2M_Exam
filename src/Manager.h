@@ -34,19 +34,27 @@ class Manager
 
         Mqtt _mqtt;
 
+        void waitForPulse();
+
         // Keep connection with thingsboard
         //  send faulty data, while waiting for user 
         //  to accomplish something. 
         void bareUpdate(int time, bool help);
 
+        // Keep connection without loop, 
+        //  usually called from a loop
         void bareUpdate(bool help);
-
-        void waitForPulse();
 
         void readBattery();
 
+        // Returns current state from a target. 
+        // Targets implemented are: 
+        //      - Display enabled or disabled
+        //      - Display name or not
         bool getState(int target);
 
+        // Sets the state to a target. 
+        // Either show name, or turn on/off display
         void setState(int target, bool enable);
 
 };
