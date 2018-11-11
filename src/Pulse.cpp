@@ -18,18 +18,19 @@ int currentBpm = 0;       // The calculated bpm, average of last 8 readings
 
 MAX30105 sensor;
 
-void Pulse::initialize()
+bool Pulse::initialize()
 {
     Serial.print("\nPulse initializing ... ");
 
     if (!sensor.begin(Wire, I2C_SPEED_FAST)) {
         Serial.println("\nMAX30105 was not found. Please check wiring/power. ");
-        while (1) { yield(); }
+        return false;
     }
 
     sensor.setup(); 
 
     Serial.println("done");
+    return true;
 }
 
 bool Pulse::update()

@@ -19,7 +19,7 @@ class Mqtt
         void setCallback(std::function<bool(int)> callback);
 
         // Check for connection, send data 
-        void update(int bpm, int motion, float batteryLevel);
+        void update(int bpm, int motion, float batteryLevel, bool faulty);
 
     private:
 
@@ -31,7 +31,7 @@ class Mqtt
 
         bool connectClient();
 
-        void sendData(int bpm, int motion, float batteryLevel);
+        void sendData(int bpm, int motion, float batteryLevel, bool faulty);
 
         char * generateClientID();
 

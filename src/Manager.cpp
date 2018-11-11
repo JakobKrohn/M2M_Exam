@@ -22,7 +22,15 @@ void Manager::initialize()
 
     // Initialize pulse sensor
     _display.bottomLineMessage("Init pulse");
-    _pulse.initialize();
+    if (!_pulse.initialize()) {
+        Serial.println("Failed at pulse");
+        _display.clearScreen();
+        _display.topLineMessage("Failed at");
+        _display.bottomLineMessage("pulse sensor");
+        while (true) { yield(); }
+        //ESP.deepSleep(0);
+        Serial.println("After sleep");
+    }
 
     // Initialize motion sensor
     _display.bottomLineMessage("Init motion");
@@ -30,7 +38,12 @@ void Manager::initialize()
 
     // Initialize mqtt
     _display.bottomLineMessage("Init mqtt");
-    _mqtt.initialize();
+    if (!_mqtt.initialize()) {
+        _display.topLineMessage("Failed at");
+        _display.bottomLineMessage("wifi/mqtt");
+        while (true) { yield(); }
+        //ESP.deepSleep(0);
+    }
 
     // Set callback for setState
     _mqtt.setCallback([this] (int target, bool enabled) { this->setState(target, enabled); });
@@ -38,7 +51,7 @@ void Manager::initialize()
     // Set callback for getState
     _mqtt.setCallback([this] (int target) -> bool { return this->getState(target); });
 
-    _mqtt.update(0, 0, 0);
+    _mqtt.update(0, 0, 0, true);
 }
 
 void Manager::start()
@@ -53,9 +66,9 @@ void Manager::start()
     _display.bottomLineMessage("the red light");
 
     while (!_pulse.update()) {
-        // TODO go to sleep after some time here
+        readBattery();
+        _mqtt.update(-1, -1, _batteryLevel, true);
         yield();
-        // ESP.deepSleep(0);
     }
 
     // Show pulse and motion for some time
@@ -71,7 +84,7 @@ void Manager::start()
     _display.bottomLineMessage("and enjoy!");
 
     // Can't delay here!
-    //delay(5000);
+    delay(5000);
     // display.enable(false, time to turn off);
 
     _display.clearScreen();
@@ -96,7 +109,8 @@ void Manager::update()
     _mqtt.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
-        _batteryLevel);
+        _batteryLevel, 
+        false);
 }
 
 // Private
@@ -133,7 +147,7 @@ void Manager::setState(int target, bool enabled)
     Serial.println(*(&_recording));
     switch (target) {
         case 0:
-            // Display name
+            // Display
             _display.enableName(enabled);
             break;
         case 1:

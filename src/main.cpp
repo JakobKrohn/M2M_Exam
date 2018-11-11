@@ -8,11 +8,10 @@ void setup() {
   manager.initialize();
   manager.start();
 
-
 }
 
 void loop() {
 
   manager.update();
-  
+
 }

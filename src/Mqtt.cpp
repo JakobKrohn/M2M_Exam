@@ -17,7 +17,6 @@ const char * PASSWORD = "244466666";
 
 // THINGSBOARD CREDENTIALS
 const char * SERVER = "cloud.thingsboard.io";
-//const char * TOKEN = "vSiGoEgh9NprdCyGRmor";
 const int PORT = 1883;
 
 unsigned long lastSend = 0;
@@ -32,6 +31,7 @@ bool Mqtt::initialize()
         client.setServer(SERVER, PORT);
         // https://github.com/knolleary/pubsubclient/issues/115
         client.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->onMessage(topic, payload, length); });
+        return true;
     }
 
     return false;
@@ -47,14 +47,14 @@ void Mqtt::setCallback(std::function<bool(int)> callback)
     getStateAA = callback;
 }
 
-void Mqtt::update(int bpm, int motion, float batteryLevel)
+void Mqtt::update(int bpm, int motion, float batteryLevel, bool faulty)
 {
     if ( !client.connected() ) {
         connectClient();
     }
 
     if ( millis() - lastSend > 1000 ) { 
-        sendData(bpm, motion, batteryLevel);
+        sendData(bpm, motion, batteryLevel, faulty);
         lastSend = millis();
     }
 
@@ -105,7 +105,7 @@ bool Mqtt::connectClient()
     int attempts = 0; 
 
     while (!client.connected()) {
-        Serial.println("Connecting mqtt client");
+        Serial.println("\nConnecting mqtt client");
 
         if (client.connect(clientID, DEVICE_TOKEN, NULL)) {
             Serial.println("Client connected");
@@ -138,8 +138,12 @@ bool Mqtt::connectClient()
     return true;
 }
 
-void Mqtt::sendData(int bpm, int motion, float batteryLevel)
+void Mqtt::sendData(int bpm, int motion, float batteryLevel, bool faulty)
 {
+    /*String act = (acting) ? "true" : "false";
+    Serial.print("Acting: ");
+    Serial.println(act);*/
+
     String payload = "{";
     payload += "\"bpm\":";
     payload += String(bpm);
@@ -149,11 +153,15 @@ void Mqtt::sendData(int bpm, int motion, float batteryLevel)
     payload += ",";
     payload += "\"battery\":";
     payload += String(batteryLevel);
+    payload += ",";
+    payload += "\"faulty\":";
+    payload += faulty;
     payload += "}";
 
     const char * attributes = payload.c_str();
 
-    // Serial.println(attributes);
+    Serial.println("");
+    Serial.println(attributes);
 
     client.publish("v1/devices/me/telemetry", attributes);
 }

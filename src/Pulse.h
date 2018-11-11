@@ -9,7 +9,7 @@ class Pulse
         Pulse(){};
         ~Pulse(){};
 
-        void initialize();
+        bool initialize();
 
         // Returns true if a beat is detected
         bool update();

@@ -14,7 +14,6 @@ unsigned long beatShownMillis = 0;
 
 String displayedBpm, displayedMotion = "";
 
-// unsigned int enableTime = 0; 
 bool shouldUpdate = true;
 bool displayEnabled = true;
 bool nameEnabled = false;
@@ -139,15 +138,6 @@ void Display::setupAngleAndMovement()
     u8g2.clearBuffer();
     u8g2.drawStr(0, TOP_Y, "Pulse: ");
     u8g2.drawStr(0, BOTTOM_Y, "Motion: ");
-}
-
-void Display::singleMessage(const char * message)
-{
-    if (!shouldUpdate) { return; }
-
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, (u8g2.getDisplayHeight() / 2) + 6, message);
-    u8g2.sendBuffer();
 }
 
 void Display::motion(String motion)
