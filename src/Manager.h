@@ -4,7 +4,7 @@
 #include "Display.h"
 #include "Motion.h"
 #include "Pulse.h"
-#include "Mqtt.h"
+#include "ThingsBoard.h"
 
 class Manager
 {
@@ -32,7 +32,7 @@ class Manager
 
         Pulse _pulse;
 
-        Mqtt _mqtt;
+        ThingsBoard _thingsBoard;
 
         void waitForPulse();
 

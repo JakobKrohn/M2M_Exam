@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Mqtt.h"
+#include "ThingsBoard.h"
 #include "DeviceCredentials.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -24,7 +24,7 @@ unsigned long lastSend = 0;
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-bool Mqtt::initialize()
+bool ThingsBoard::initialize()
 {
     WiFi.begin(SSID, PASSWORD);
     if (connectWifi()) {
@@ -37,17 +37,17 @@ bool Mqtt::initialize()
     return false;
 }
 
-void Mqtt::setCallback(std::function<void(int, bool)> callback)
+void ThingsBoard::setCallback(std::function<void(int, bool)> callback)
 {
     setStateAA = callback;
 }
 
-void Mqtt::setCallback(std::function<bool(int)> callback)
+void ThingsBoard::setCallback(std::function<bool(int)> callback)
 {
     getStateAA = callback;
 }
 
-void Mqtt::update(int bpm, int motion, float batteryLevel, bool faulty)
+void ThingsBoard::update(int bpm, int motion, float batteryLevel, bool faulty)
 {
     if ( !client.connected() ) {
         connectClient();
@@ -63,7 +63,7 @@ void Mqtt::update(int bpm, int motion, float batteryLevel, bool faulty)
 
 // Private
 
-bool Mqtt::connectWifi()
+bool ThingsBoard::connectWifi()
 {
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("Wifi already connected");
@@ -92,7 +92,7 @@ bool Mqtt::connectWifi()
     return true;
 }
 
-bool Mqtt::connectClient()
+bool ThingsBoard::connectClient()
 {
     if (!connectWifi()) {
         return false;
@@ -138,7 +138,7 @@ bool Mqtt::connectClient()
     return true;
 }
 
-void Mqtt::sendData(int bpm, int motion, float batteryLevel, bool faulty)
+void ThingsBoard::sendData(int bpm, int motion, float batteryLevel, bool faulty)
 {
     /*String act = (acting) ? "true" : "false";
     Serial.print("Acting: ");
@@ -166,7 +166,7 @@ void Mqtt::sendData(int bpm, int motion, float batteryLevel, bool faulty)
     client.publish("v1/devices/me/telemetry", attributes);
 }
 
-char * Mqtt::generateClientID()
+char * ThingsBoard::generateClientID()
 {
     static const char * alphanum = "0123456789" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "abcdefghijklmnopqrstuvwxyz";
 
@@ -181,7 +181,7 @@ char * Mqtt::generateClientID()
     return clientID;
 }
 
-void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
+void ThingsBoard::onMessage(const char * topic, byte * payload, unsigned int length)
 {
     // https://thingsboard.io/docs/samples/esp8266/gpio/
     Serial.println("Message received");
@@ -228,7 +228,7 @@ void Mqtt::onMessage(const char * topic, byte * payload, unsigned int length)
     }
 }
 
-String Mqtt::getStateString() const
+String ThingsBoard::getStateString() const
 {
     //auto states = getStateAA();
 

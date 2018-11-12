@@ -12,7 +12,15 @@ float _batteryLevel = 0;
 void Manager::initialize()
 {
     Serial.begin(115200);
-    Wire.begin(D2, D1);
+    pinMode(D1, OUTPUT);
+    delay(1000);
+
+    // Check if device should connect or not
+    
+
+    digitalWrite(D1, HIGH);
+    //Wire.begin(D2, D1);
+    Wire.begin(12, 14);
 
     delay(2000);
 
@@ -36,20 +44,20 @@ void Manager::initialize()
 
     // Initialize mqtt
     _display.bottomLineMessage("Init mqtt");
-    if (!_mqtt.initialize()) {
+    if (!_thingsBoard.initialize()) {
         _display.topLineMessage("Failed at");
         _display.bottomLineMessage("wifi/mqtt");
         while (true) { yield(); }
     }
 
     // Set callback for setState
-    _mqtt.setCallback([this] (int target, bool enabled) { this->setState(target, enabled); });
+    _thingsBoard.setCallback([this] (int target, bool enabled) { this->setState(target, enabled); });
 
     // Set callback for getState
-    _mqtt.setCallback([this] (int target) -> bool { return this->getState(target); });
+    _thingsBoard.setCallback([this] (int target) -> bool { return this->getState(target); });
 
     // Create a connection to thingsboard with fake data
-    _mqtt.update(0, 0, 0, true);
+    _thingsBoard.update(0, 0, 0, true);
 }
 
 void Manager::tutorial()
@@ -99,7 +107,7 @@ void Manager::update()
     _display.bpm(String(_pulse.getCurrentBpm()));
     _display.motion(_motion.getMovementString());
 
-    _mqtt.update(
+    _thingsBoard.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
         _batteryLevel, 
@@ -138,7 +146,7 @@ void Manager::bareUpdate(int time, bool help) {
         readBattery();
         _pulse.update();
         _motion.update();
-        _mqtt.update(
+        _thingsBoard.update(
             _pulse.getCurrentBpm(), 
             _motion.getAverageMovement(), 
             _batteryLevel, 
@@ -152,7 +160,7 @@ void Manager::bareUpdate(bool help)
     readBattery();
     _pulse.update();
     _motion.update();
-    _mqtt.update(
+    _thingsBoard.update(
         _pulse.getCurrentBpm(), 
         _motion.getAverageMovement(), 
         _batteryLevel, 

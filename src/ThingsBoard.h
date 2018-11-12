@@ -1,13 +1,13 @@
-#ifndef MQTT_H
-#define MQTT_H
+#ifndef THINGS_BOARD_H
+#define THINGS_BOARD_H
 
-class Mqtt
+class ThingsBoard
 {
 
     public:
 
-        Mqtt(){};
-        ~Mqtt(){};
+        ThingsBoard(){};
+        ~ThingsBoard(){};
 
         // Connect to wifi and server
         bool initialize();
@@ -41,4 +41,4 @@ class Mqtt
 
 };
 
-#endif // MQTT_H
+#endif // THINGS_BOARD_H
