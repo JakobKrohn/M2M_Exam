@@ -1,14 +1,14 @@
 #include "EspCore.h"
 #include <ESP8266WiFi.h>
 
-const char * SSID2 = "K2-jakob";
-const char * PASSWORD2 = "244466666";
+const char * SSID = "K2-jakob";
+const char * PASSWORD = "244466666";
 
 void EspCore::connectWifi()
 {
     Serial.println("Connecting wifi");
 
-    WiFi.begin(SSID2, PASSWORD2);
+    WiFi.begin(SSID, PASSWORD);
 
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("Wifi already connected");
@@ -17,7 +17,7 @@ void EspCore::connectWifi()
 
     Serial.print("Wifi connecting ");
 
-    WiFi.begin(SSID2, PASSWORD2);
+    WiFi.begin(SSID, PASSWORD);
 
     int timeout = 50;
     int attempts = 0;

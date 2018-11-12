@@ -15,14 +15,22 @@ void Manager::initialize()
     pinMode(D1, OUTPUT);
     delay(1000);
 
+    _espCore.connectWifi();
+    _cloudMqtt.initialize();
+
     // Check if device should connect or not
-    
+    bool power = _cloudMqtt.shouldPowerOn();
+
+    if (!power) {
+        Serial.println("Sleeping for a minute");
+        _espCore.sleep(1);
+    }
 
     digitalWrite(D1, HIGH);
     //Wire.begin(D2, D1);
     Wire.begin(12, 14);
 
-    delay(2000);
+    delay(4000);
 
     // Initialize display
     _display.initialize();
@@ -112,6 +120,12 @@ void Manager::update()
         _motion.getAverageMovement(), 
         _batteryLevel, 
         !_pulse.isValid());
+
+    _cloudMqtt.update();
+    if (_cloudMqtt.shouldTurnOff()) {
+        Serial.println("Server says power down");
+        _espCore.sleep(1);
+    }
 }
 
 // Private

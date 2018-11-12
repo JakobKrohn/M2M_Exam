@@ -27,7 +27,7 @@ class ThingsBoard
 
         std::function<bool(int)> getStateAA;
 
-        bool connectWifi();
+        //bool connectWifi();
 
         bool connectClient();
 

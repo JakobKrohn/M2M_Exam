@@ -1,6 +1,8 @@
 #ifndef MANAGER_H
 #define MANAGER_H
 
+#include "EspCore.h"
+#include "CloudMqtt.h"
 #include "Display.h"
 #include "Motion.h"
 #include "Pulse.h"
@@ -25,6 +27,10 @@ class Manager
         void update();
 
     private: 
+
+        EspCore _espCore;
+
+        CM::CloudMqtt _cloudMqtt;
 
         Display _display;
 

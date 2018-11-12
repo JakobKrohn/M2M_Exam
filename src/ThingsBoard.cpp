@@ -12,8 +12,8 @@
 // https://github.com/knolleary/pubsubclient 
 
 // WIFI CREDENTIALS
-const char * SSID = "K2-jakob";
-const char * PASSWORD = "244466666";
+// const char * SSID = "K2-jakob";
+// const char * PASSWORD = "244466666";
 
 // THINGSBOARD CREDENTIALS
 const char * SERVER = "cloud.thingsboard.io";
@@ -26,15 +26,21 @@ PubSubClient client(wifiClient);
 
 bool ThingsBoard::initialize()
 {
-    WiFi.begin(SSID, PASSWORD);
-    if (connectWifi()) {
+    client.setServer(SERVER, PORT);
+    // https://github.com/knolleary/pubsubclient/issues/115
+    client.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->onMessage(topic, payload, length); });
+    
+    return true;
+
+    // WiFi.begin(SSID, PASSWORD);
+    /*if (connectWifi()) {
         client.setServer(SERVER, PORT);
         // https://github.com/knolleary/pubsubclient/issues/115
         client.setCallback([this] (char* topic, byte* payload, unsigned int length) { this->onMessage(topic, payload, length); });
         return true;
     }
 
-    return false;
+    return false;*/
 }
 
 void ThingsBoard::setCallback(std::function<void(int, bool)> callback)
@@ -63,7 +69,7 @@ void ThingsBoard::update(int bpm, int motion, float batteryLevel, bool faulty)
 
 // Private
 
-bool ThingsBoard::connectWifi()
+/*bool ThingsBoard::connectWifi()
 {
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("Wifi already connected");
@@ -90,13 +96,13 @@ bool ThingsBoard::connectWifi()
 
     Serial.println("\nConnected!");
     return true;
-}
+}*/
 
 bool ThingsBoard::connectClient()
 {
-    if (!connectWifi()) {
+    /*if (!connectWifi()) {
         return false;
-    }
+    }*/
 
     // Generate unique name
     auto clientID = generateClientID();
