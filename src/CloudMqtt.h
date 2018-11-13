@@ -2,6 +2,7 @@
 #define CLOUD_MQTT_H
 
 #include <Arduino.h>
+#include "EspCore.h"
 
 namespace CM
 {
@@ -21,6 +22,8 @@ namespace CM
         private:
 
             String message;
+
+            EspCore _espCore;
 
             void connect();
 

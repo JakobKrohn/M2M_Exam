@@ -8,6 +8,8 @@ class EspCore
 
         void connectWifi();
 
+        void autoConnect();
+
         void sleep(int minutes);
 
 };

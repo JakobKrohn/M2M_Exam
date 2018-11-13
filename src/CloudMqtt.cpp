@@ -2,6 +2,7 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 
+
 namespace CM
 {
     WiFiClient wifiClient;
@@ -13,6 +14,8 @@ namespace CM
 
         client.setServer("m15.cloudmqtt.com", 17350);
         client.setCallback([this] (char * topic, byte * payload, unsigned int length) { this->callback(topic, payload, length); });
+
+        _espCore.autoConnect();
 
         connect();
     }
@@ -58,6 +61,8 @@ namespace CM
         while (!client.connected()) 
         {
             Serial.print("Attempting MQTT connection...");
+
+            _espCore.autoConnect();
             
             // Generate ClientID
             auto clientID = generateClientID();
@@ -84,7 +89,7 @@ namespace CM
                 Serial.print(client.state());
                 Serial.println(" try again in 5 seconds");
 
-                delay(2000);
+                delay(5000);
             }
 
             delete(clientID);

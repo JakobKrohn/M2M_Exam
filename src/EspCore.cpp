@@ -1,8 +1,8 @@
 #include "EspCore.h"
 #include <ESP8266WiFi.h>
 
-const char * SSID = "K2-jakob";
-const char * PASSWORD = "244466666";
+const char * SSID = "Student";
+const char * PASSWORD = "Student1914";
 
 void EspCore::connectWifi()
 {
@@ -19,6 +19,11 @@ void EspCore::connectWifi()
 
     WiFi.begin(SSID, PASSWORD);
 
+    autoConnect();
+}
+
+void EspCore::autoConnect()
+{
     int timeout = 50;
     int attempts = 0;
 
@@ -28,14 +33,14 @@ void EspCore::connectWifi()
         if (attempts++ >= timeout) {
             Serial.println(F("\nE: Could not connect to Wifi, going to sleep"));
             
-            // Sleep for 15 minutes
-            sleep(15);
+            // Sleep for 1 minutes
+            sleep(1);
         }
 
         delay(500);
     }
 
-    Serial.println("\nConnected!");
+    Serial.println("\nwifi connected!");
 }
 
 void EspCore::sleep(int minutes)
