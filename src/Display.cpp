@@ -54,6 +54,11 @@ void Display::update()
     manageBeatingHeart();
 }
 
+void Display::enableUpdate(bool enabled)
+{
+    shouldUpdate = enabled;
+}
+
 void Display::enableName(bool enabled)
 {
     if (nameEnabled == enabled) {

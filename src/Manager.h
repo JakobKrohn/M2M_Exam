@@ -41,16 +41,7 @@ class Manager
         ThingsBoard _thingsBoard;
 
         void waitForPulse();
-
-        // Keep connection with thingsboard
-        //  send faulty data, while waiting for user 
-        //  to accomplish something. 
-        void bareUpdate(int time, bool help);
-
-        // Keep connection without loop, 
-        //  usually called from a loop
-        void bareUpdate(bool help);
-
+        
         void readBattery();
 
         // Returns current state from a target. 

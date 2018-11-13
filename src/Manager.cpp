@@ -5,7 +5,7 @@
 const int BATTERY_PIN = A0;
 const long TUTORIAL_TIME = 10000;
 
-bool _recording = false;
+//bool _recording = false;
 
 float _batteryLevel = 0;
 
@@ -70,33 +70,58 @@ void Manager::initialize()
 
 void Manager::tutorial()
 {
+    Serial.println("Starting tutorial");
     // Greet user
     _display.clearScreen();
     _display.topLineMessage("Welcome!");
+    _display.enableUpdate(false);
 
     // Display welcome message for 2 seconds
-    bareUpdate(2000, false);
+    //bareUpdate(5000, false);
+    auto start = millis();
+    while (millis() - start < 5000) {
+        update();
+        yield();
+    }
 
     // Explain how to use motion sensor
     _display.topLineMessage("Place the unit ");
     _display.bottomLineMessage("on your leg");
 
-    bareUpdate(6000, false);
+    //bareUpdate(6000, false);
+    start = millis();
+    while (millis() - start < 10000) {
+        update();
+        yield();
+    }
 
     waitForPulse();
 
     // Kudos to user
     _display.clearScreen();
+    _display.enableUpdate(false);
     _display.topLineMessage("Good job!");
 
-    bareUpdate(4000, false);
+    //bareUpdate(4000, false);
+    start = millis();
+    while (millis() - start < 5000) {
+        update();
+        yield();
+    }
 
     _display.clearScreen();
+    _display.enableUpdate(false);
     _display.topLineMessage("Sit back");
     _display.bottomLineMessage("and enjoy!");
 
-    bareUpdate(2000, false);
+    //bareUpdate(2000, false);
+    start = millis();
+    while (millis() - start < 4000) {
+        update();
+        yield();
+    }
 
+    _display.enableUpdate(true);
     _display.clearScreen();
     _display.pulseAndMovement();
 }
@@ -134,15 +159,18 @@ void Manager::waitForPulse()
 {
     // Explain how to use pulse sensor
     _display.clearScreen();
+    _display.enableUpdate(false);
     _display.topLineMessage("Strap finger ");
     _display.bottomLineMessage("on red light");
 
     // Wait until user places finger on motion sensor
     while (!_pulse.update()) {
-        bareUpdate(true);
+        update();
+        //bareUpdate(true);
     }
 
     // Show pulse and motion for some time
+    _display.enableUpdate(true);
     _display.pulseAndMovement();
     auto start = millis();
     while (millis() - start < TUTORIAL_TIME) {
@@ -152,34 +180,6 @@ void Manager::waitForPulse()
             waitForPulse();
         }
     }
-}
-
-void Manager::bareUpdate(int time, bool help) {
-    auto start = millis();
-    while (millis() - start < 2000) {
-        readBattery();
-        _pulse.update();
-        _motion.update();
-        _thingsBoard.update(
-            _pulse.getCurrentBpm(), 
-            _motion.getAverageMovement(), 
-            _batteryLevel, 
-            help);
-        yield();
-    }
-}
-
-void Manager::bareUpdate(bool help)
-{
-    readBattery();
-    _pulse.update();
-    _motion.update();
-    _thingsBoard.update(
-        _pulse.getCurrentBpm(), 
-        _motion.getAverageMovement(), 
-        _batteryLevel, 
-        help);
-    yield();
 }
 
 void Manager::readBattery()

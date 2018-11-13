@@ -15,6 +15,8 @@ class Display
         // Handles heart beat signals. 
         void update();
 
+        void enableUpdate(bool enabled);
+
         // Shows device name in large font. 
         // Used to locate devices. 
         void enableName(bool enabled);
