@@ -8,6 +8,8 @@
 - MAX30102
 - 0.91" OLED display
 - Wemos D1 relay shield
+- Wemos D1 battery shield
+- 500 mAh lipo battery
 
 ### Built with
 - PlatformIO
